@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 01, 2026 at 01:26 PM
+-- Generation Time: Apr 05, 2026 at 05:11 PM
 -- Server version: 5.7.44-48
 -- PHP Version: 8.3.26
 
@@ -64,10 +64,10 @@ CREATE TABLE `Grocery_List` (
 --
 
 INSERT INTO `Grocery_List` (`list_id`, `ingredient_id`, `quantity`, `unit`, `is_purchased`, `user_id`) VALUES
-(1, 5, 400.00, 'grams', 0, 1),
-(2, 10, 500.00, 'grams', 0, 1),
+(1, 5, 400.00, 'grams', 1, 1),
+(2, 10, 500.00, 'grams', 1, 1),
 (3, 11, 6.00, 'count', 1, 1),
-(4, 8, 3.00, 'count', 0, 1),
+(4, 8, 3.00, 'count', 1, 1),
 (5, 6, 2.00, 'count', 1, 1);
 
 -- --------------------------------------------------------
@@ -101,22 +101,6 @@ INSERT INTO `Ingredients` (`ingredient_id`, `ingredient_name`, `default_unit`) V
 (12, 'Romaine Lettuce', 'grams'),
 (13, 'Feta Cheese', 'grams'),
 (14, 'Olive Oil', 'ml');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Ingredient_Nutrition`
---
-
-CREATE TABLE `Ingredient_Nutrition` (
-  `nutrition_id` int(11) NOT NULL,
-  `ingredient_id` int(11) NOT NULL,
-  `calories` decimal(8,2) DEFAULT NULL,
-  `protein` decimal(8,2) DEFAULT NULL,
-  `carbs` decimal(8,2) DEFAULT NULL,
-  `sugar` decimal(8,2) DEFAULT NULL,
-  `fat` decimal(8,2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -193,19 +177,20 @@ CREATE TABLE `Recipes` (
   `image_url` varchar(500) COLLATE utf8_unicode_ci DEFAULT NULL,
   `source_api` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
   `last_fetched` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `cache_priority` enum('favorite','recently_used','temporary') COLLATE utf8_unicode_ci NOT NULL
+  `cache_priority` enum('favorite','recently_used','temporary') COLLATE utf8_unicode_ci NOT NULL,
+  `serving_size` int(11) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `Recipes`
 --
 
-INSERT INTO `Recipes` (`recipe_id`, `recipe_name`, `instructions`, `image_url`, `source_api`, `last_fetched`, `cache_priority`) VALUES
-(1, 'Spaghetti Carbonara', 'Boil pasta. Fry pancetta. Mix eggs and cheese. Combine all.', 'https://img.example.com/carbonara.jpg', 'Spoonacular', '2026-02-22 12:22:03', 'favorite'),
-(2, 'Chicken Stir Fry', 'Chop vegetables. Cook chicken. Add sauce and stir fry together.', 'https://img.example.com/stirfry.jpg', 'Spoonacular', '2026-02-22 12:22:03', 'recently_used'),
-(3, 'Avocado Toast', 'Toast bread. Mash avocado. Season and top with eggs.', 'https://img.example.com/avotoast.jpg', 'Edamam', '2026-02-22 12:22:03', 'temporary'),
-(4, 'Beef Tacos', 'Brown beef. Season with spices. Fill tortillas with toppings.', 'https://img.example.com/tacos.jpg', 'Spoonacular', '2026-02-22 12:22:03', 'favorite'),
-(5, 'Greek Salad', 'Chop vegetables. Add olives and feta. Dress with olive oil.', 'https://img.example.com/greeksalad.jpg', 'Edamam', '2026-02-22 12:22:03', 'recently_used');
+INSERT INTO `Recipes` (`recipe_id`, `recipe_name`, `instructions`, `image_url`, `source_api`, `last_fetched`, `cache_priority`, `serving_size`) VALUES
+(1, 'Spaghetti Carbonara', 'Boil pasta. Fry pancetta. Mix eggs and cheese. Combine all.', 'https://img.example.com/carbonara.jpg', 'Spoonacular', '2026-02-22 12:22:03', 'favorite', 1),
+(2, 'Chicken Stir Fry', 'Chop vegetables. Cook chicken. Add sauce and stir fry together.', 'https://img.example.com/stirfry.jpg', 'Spoonacular', '2026-02-22 12:22:03', 'recently_used', 1),
+(3, 'Avocado Toast', 'Toast bread. Mash avocado. Season and top with eggs.', 'https://img.example.com/avotoast.jpg', 'Edamam', '2026-02-22 12:22:03', 'temporary', 1),
+(4, 'Beef Tacos', 'Brown beef. Season with spices. Fill tortillas with toppings.', 'https://img.example.com/tacos.jpg', 'Spoonacular', '2026-02-22 12:22:03', 'favorite', 1),
+(5, 'Greek Salad', 'Chop vegetables. Add olives and feta. Dress with olive oil.', 'https://img.example.com/greeksalad.jpg', 'Edamam', '2026-02-22 12:22:03', 'recently_used', 1);
 
 -- --------------------------------------------------------
 
@@ -240,22 +225,6 @@ INSERT INTO `Recipe_Ingredients` (`recipe_id`, `ingredient_id`, `quantity`, `uni
 (5, 12, 150.00, 'grams'),
 (5, 13, 60.00, 'grams'),
 (5, 14, 20.00, 'ml');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Recipe_Nutrition`
---
-
-CREATE TABLE `Recipe_Nutrition` (
-  `nutrition_id` int(11) NOT NULL,
-  `recipe_id` int(11) NOT NULL,
-  `calories` decimal(8,2) DEFAULT NULL,
-  `protein` decimal(8,2) DEFAULT NULL,
-  `carbs` decimal(8,2) DEFAULT NULL,
-  `sugar` decimal(8,2) DEFAULT NULL,
-  `fat` decimal(8,2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -369,7 +338,8 @@ CREATE TABLE `view_user_favorites` (
 ALTER TABLE `Favorites`
   ADD PRIMARY KEY (`favorite_id`),
   ADD UNIQUE KEY `recipe_id` (`recipe_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD UNIQUE KEY `user_recipe` (`user_id`,`recipe_id`),
+  ADD UNIQUE KEY `recipe_id_2` (`recipe_id`,`user_id`);
 
 --
 -- Indexes for table `Grocery_List`
@@ -385,13 +355,6 @@ ALTER TABLE `Grocery_List`
 ALTER TABLE `Ingredients`
   ADD PRIMARY KEY (`ingredient_id`),
   ADD UNIQUE KEY `ingredient_name` (`ingredient_name`);
-
---
--- Indexes for table `Ingredient_Nutrition`
---
-ALTER TABLE `Ingredient_Nutrition`
-  ADD PRIMARY KEY (`nutrition_id`),
-  ADD KEY `ingredient_id` (`ingredient_id`);
 
 --
 -- Indexes for table `Inventory`
@@ -421,13 +384,6 @@ ALTER TABLE `Recipes`
 ALTER TABLE `Recipe_Ingredients`
   ADD PRIMARY KEY (`recipe_id`,`ingredient_id`),
   ADD KEY `ingredient_id` (`ingredient_id`);
-
---
--- Indexes for table `Recipe_Nutrition`
---
-ALTER TABLE `Recipe_Nutrition`
-  ADD PRIMARY KEY (`nutrition_id`),
-  ADD KEY `recipe_id` (`recipe_id`);
 
 --
 -- Indexes for table `Recipe_Tags`
@@ -473,12 +429,6 @@ ALTER TABLE `Ingredients`
   MODIFY `ingredient_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT for table `Ingredient_Nutrition`
---
-ALTER TABLE `Ingredient_Nutrition`
-  MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `Inventory`
 --
 ALTER TABLE `Inventory`
@@ -495,12 +445,6 @@ ALTER TABLE `Nutritional_Values`
 --
 ALTER TABLE `Recipes`
   MODIFY `recipe_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `Recipe_Nutrition`
---
-ALTER TABLE `Recipe_Nutrition`
-  MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `Tags`
@@ -551,12 +495,6 @@ ALTER TABLE `Grocery_List`
   ADD CONSTRAINT `Grocery_List_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`);
 
 --
--- Constraints for table `Ingredient_Nutrition`
---
-ALTER TABLE `Ingredient_Nutrition`
-  ADD CONSTRAINT `Ingredient_Nutrition_ibfk_1` FOREIGN KEY (`ingredient_id`) REFERENCES `Ingredients` (`ingredient_id`);
-
---
 -- Constraints for table `Inventory`
 --
 ALTER TABLE `Inventory`
@@ -576,12 +514,6 @@ ALTER TABLE `Nutritional_Values`
 ALTER TABLE `Recipe_Ingredients`
   ADD CONSTRAINT `Recipe_Ingredients_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `Recipes` (`recipe_id`),
   ADD CONSTRAINT `Recipe_Ingredients_ibfk_2` FOREIGN KEY (`ingredient_id`) REFERENCES `Ingredients` (`ingredient_id`);
-
---
--- Constraints for table `Recipe_Nutrition`
---
-ALTER TABLE `Recipe_Nutrition`
-  ADD CONSTRAINT `Recipe_Nutrition_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `Recipes` (`recipe_id`);
 
 --
 -- Constraints for table `Recipe_Tags`
