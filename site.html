@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>📖 Recipe Book</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Patrick+Hand&family=Fredoka+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: #e8d2de;
+      background-image: radial-gradient(circle at 20% 20%, #f6e2ef 0%, #decbd9 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .handwriting { font-family: 'Patrick Hand', cursive; }
+    .title-font  { font-family: 'Fredoka One', cursive; }
+
+    /* ── Book chrome ─────────────────────────────────── */
+    .book-cover {
+      position: relative;
+      background: #c9adbc;
+      border-radius: 16px 28px 28px 16px;
+      box-shadow: 0 30px 35px -12px #7a5f6e, 0 8px 15px -5px rgba(0,0,0,.15), inset 0 0 0 2px #e7d0dd;
+      padding: 12px 16px 12px 20px;
+      overflow: visible;
+    }
+
+    .spiral-binding {
+      position: absolute;
+      left: -22px; top: 20px; bottom: 20px;
+      width: 44px;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 12;
+    }
+    .spiral-ring {
+      width: 42px; height: 22px;
+      background: #b8a0ad;
+      border: 2px solid #9b8190;
+      border-radius: 22px 8px 8px 22px;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,.4), 0 5px 0 #7a6270, 3px 3px 6px rgba(0,0,0,.1);
+      margin: 2px 0; position: relative;
+    }
+    .spiral-ring::after {
+      content: "";
+      position: absolute; right: -8px; top: 3px;
+      width: 16px; height: 16px;
+      background: #dcc9d2; border-radius: 50%;
+      border: 2px solid #a58795;
+      box-shadow: inset 0 1px 3px #fff, 0 2px 4px rgba(0,0,0,.15);
+    }
+
+    /* ── Book pages ──────────────────────────────────── */
+    .book-pages {
+      position: relative;
+      background: #fcf4ec;
+      border-radius: 10px 22px 22px 10px;
+      box-shadow: inset 0 0 0 1px #f3e2d9, inset 6px 0 10px -6px rgba(0,0,0,.05), 0 0 0 2px #f0ddd3;
+      padding: 20px 16px;
+      min-height: 520px;
+      transition: background .2s, box-shadow .2s;
+      z-index: 5;
+      margin-right: 48px;
+    }
+    .book-pages::before {
+      content: "";
+      position: absolute;
+      top: 8px; left: -8px; right: -6px; bottom: -8px;
+      background: #e3cfd8; border-radius: 10px 18px 18px 10px;
+      z-index: -2; opacity: .5;
+      box-shadow: inset 0 0 0 1px #dcc2cd;
+    }
+    .book-pages::after {
+      content: "";
+      position: absolute;
+      top: 14px; left: -5px; right: -4px; bottom: -12px;
+      background: #d6bdc9; border-radius: 8px 14px 14px 8px;
+      z-index: -1; opacity: .4;
+    }
+
+    .page-flip { animation: flipPage .35s ease-out; }
+    @keyframes flipPage {
+      0%   { opacity: .7; transform: rotateY(-2deg) scale(.98); }
+      100% { opacity:  1; transform: rotateY(0)     scale(1);   }
+    }
+
+    /* ── Bookmarks ───────────────────────────────────── */
+    .bookmarks-under {
+      position: absolute;
+      right: 0; top: 35px; bottom: 35px;
+      width: 44px;
+      display: flex; flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      z-index: 20;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    /* The bookmark is a fixed 44px-wide hit zone that never moves */
+    .pull-bookmark {
+      font-family: 'Patrick Hand', cursive;
+      position: relative;
+      width: 44px;
+      height: 38px;
+      pointer-events: auto;
+      cursor: pointer;
+      flex-shrink: 0;
+      overflow: visible;
+    }
+
+    /* Icon pill — always visible, anchored to the right */
+    .pull-bookmark .bm-icon {
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 42px;
+      background: #ffe5d9;
+      border: 2px solid #eebbcc;
+      border-right: none;
+      border-radius: 20px 0 0 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      color: #6e4b5c;
+      box-shadow: -3px 4px 8px rgba(150,100,130,.2);
+      transition: background .2s, border-color .2s;
+      z-index: 2;
+    }
+
+    /* Label — slides out to the left from behind the icon, never pushes the icon */
+    .pull-bookmark .bm-label {
+      position: absolute;
+      right: 38px;
+      top: 50%; transform: translateY(-50%);
+      white-space: nowrap;
+      background: #ffe5d9;
+      border: 2px solid #eebbcc;
+      border-right: none;
+      border-radius: 20px 0 0 20px;
+      padding: 0 14px 0 18px;
+      height: 38px;
+      line-height: 36px;
+      font-size: .85rem; font-weight: 600;
+      color: #6e4b5c;
+      pointer-events: none;
+      clip-path: inset(0 0 0 100%);
+      transition: clip-path .22s cubic-bezier(.34,1.2,.64,1),
+                  background .2s, border-color .2s;
+      z-index: 25;
+      box-shadow: -3px 4px 10px rgba(150,100,130,.18);
+    }
+
+    /* Ribbon tail on the label */
+    .pull-bookmark .bm-label::after {
+      content: "";
+      position: absolute; right: -6px; top: 50%;
+      transform: translateY(-50%);
+      width: 10px; height: 18px;
+      background: #f5cdc2;
+      border-radius: 0 4px 4px 0;
+      border-right: 2px solid #d9a89c;
+      opacity: .8;
+    }
+
+    /* All labels hidden by default */
+    .pull-bookmark .bm-label {
+      clip-path: inset(0 0 0 100%);
+    }
+
+    /* Reveal on hover for any tab */
+    .pull-bookmark:hover .bm-label {
+      clip-path: inset(0 0 0 0%);
+    }
+    .pull-bookmark:hover .bm-icon,
+    .pull-bookmark:hover .bm-label {
+      background: #ffd9e8; border-color: #f2a5b9;
+    }
+
+    /* Active tab — icon only styling, no label */
+    .pull-bookmark.active .bm-icon {
+      background: #fff3e6; border-color: #f48fb1;
+      color: #a53860;
+      box-shadow: -3px 4px 10px rgba(180,100,130,.25), 0 0 0 2px #ffeef4;
+    }
+
+    /* ── Table ───────────────────────────────────────── */
+    .recipe-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+    .recipe-table th {
+      text-align: left; padding: 10px 8px;
+      background: rgba(251,193,217,.7);
+      color: #5e3a4e; font-weight: 700;
+      border-radius: 30px 30px 8px 8px;
+      box-shadow: inset 0 2px 4px #ffeef6, 0 4px 0 #dbb1c3;
+      font-size: .85rem;
+      border: 1px solid #fad1e4;
+    }
+    .recipe-table td {
+      background: #fffcf7; padding: 10px 8px;
+      border-radius: 20px 8px 20px 8px;
+      box-shadow: 0 5px 0 #edd4df, 0 2px 8px rgba(180,120,140,.08);
+      color: #4d2e44; font-weight: 500;
+      border: 1px solid #fce1f0; font-size: .85rem;
+    }
+
+    /* ── Nutrition table — matches recipe-table styling ─ */
+    .nutrition-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+    .nutrition-table th {
+      text-align: left; padding: 10px 8px;
+      background: rgba(197,224,180,.75);
+      color: #3a5e3a; font-weight: 700;
+      border-radius: 30px 30px 8px 8px;
+      box-shadow: inset 0 2px 4px #e6f5dd, 0 4px 0 #a8d08d;
+      font-size: .85rem;
+      border: 1px solid #c5e0b4;
+    }
+    .nutrition-table td {
+      background: #f8fdf5; padding: 10px 8px;
+      border-radius: 20px 8px 20px 8px;
+      box-shadow: 0 5px 0 #c8e6b8, 0 2px 8px rgba(100,160,80,.08);
+      color: #2e4a2e; font-weight: 500;
+      border: 1px solid #d4edbd; font-size: .85rem;
+    }
+    .nutrition-table tr:nth-child(even) td { background: #f3faed; }
+    .nutrition-bar-wrap {
+      background: #d4edbd; border-radius: 999px;
+      height: 8px; min-width: 60px;
+      overflow: hidden; display: inline-block; width: 80px;
+      vertical-align: middle; margin-left: 6px;
+    }
+    .nutrition-bar { height: 100%; border-radius: 999px; background: #70b84d; transition: width .4s; }
+
+    .fav-btn {
+      background: none; border: none; font-size: 1.2rem; cursor: pointer;
+      color: #d99bb3; transition: transform .1s;
+      padding: 0 4px;
+    }
+    .fav-btn:hover { transform: scale(1.2); color: #f29bba; }
+    .fav-btn.favorited { color: #e84393; }
+
+    .tag-bookmark {
+      display: inline-flex; align-items: center;
+      background: #fde2b1; padding: 3px 8px 3px 10px;
+      margin: 2px 3px 2px 0;
+      border-radius: 0 12px 12px 0;
+      font-size: .72rem; color: #5e4a3c; font-weight: 600;
+      border: 1px solid #e6cca8; border-left: 4px solid #d4b48c;
+      box-shadow: 2px 2px 0 #e0c8b0;
+    }
+    .tag-bookmark i { margin-left: 5px; font-size: .75rem; color: #b37b6a; cursor: pointer; }
+
+    /* ── Login ───────────────────────────────────────── */
+    .login-cover {
+      background: linear-gradient(145deg, #fee3f5 0%, #f4d2ec 100%);
+      border-radius: 40px;
+      box-shadow: 0 35px 45px -15px #c29bb3, inset 0 0 0 3px #fff3fc;
+    }
+
+    /* ── Recipe detail modal ─────────────────────────── */
+    .detail-modal-box {
+      background: #fffdf8;
+      border-radius: 28px;
+      padding: 32px 28px 24px;
+      max-width: 520px; width: 92%;
+      box-shadow: 0 20px 50px rgba(100,50,70,.3), inset 0 0 0 2px #f7d4e2;
+      font-family: 'Patrick Hand', cursive;
+      max-height: 88vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .detail-close {
+      position: absolute; top: 16px; right: 18px;
+      background: #fce4ef; border: none; border-radius: 50%;
+      width: 32px; height: 32px; font-size: 1rem; cursor: pointer;
+      color: #b05878; display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .detail-close:hover { background: #f7b8d0; }
+    .detail-type-pill {
+      display: inline-block;
+      background: #f3e8ff; padding: 3px 14px;
+      border-radius: 999px; font-size: .82rem; color: #5e3a7e;
+      margin-bottom: 10px;
+    }
+    .detail-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.55rem; color: #7a3d5e;
+      margin-bottom: 4px; line-height: 1.2;
+    }
+    .detail-source { font-size: .8rem; color: #b09aaa; margin-bottom: 14px; }
+    .detail-section-label {
+      font-size: .78rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: #c48ba2; margin: 16px 0 6px;
+    }
+    .detail-instructions {
+      background: #fff3e7; border-radius: 14px;
+      padding: 14px 16px; font-size: .95rem; color: #4d2e44;
+      line-height: 1.6; border: 1px solid #fce1d4;
+    }
+    .detail-nutrition-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px;
+    }
+    .detail-nut-card {
+      background: #f3faed; border-radius: 12px;
+      padding: 10px 8px; text-align: center; border: 1px solid #d4edbd;
+    }
+    .detail-nut-card .val { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: #3a6e3a; }
+    .detail-nut-card .lbl { font-size: .72rem; color: #7aaa70; margin-top: 2px; }
+    .detail-fav-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 20px; border-radius: 999px; border: none;
+      font-family: 'Patrick Hand', cursive; font-size: 1rem;
+      cursor: pointer; transition: background .15s;
+      background: #fce4ef; color: #b05878;
+    }
+    .detail-fav-btn:hover     { background: #f7b8d0; }
+    .detail-fav-btn.favorited { background: #f48fb1; color: #fff; }
+
+    /* ── Recipe-type modal ───────────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(80,40,60,.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9000;
+    }
+    .modal-box {
+      background: #fff8f2;
+      border-radius: 28px;
+      padding: 32px 28px;
+      max-width: 420px; width: 90%;
+      box-shadow: 0 20px 40px rgba(100,50,70,.25), inset 0 0 0 2px #f7d4e2;
+      font-family: 'Patrick Hand', cursive;
+    }
+    .modal-box h2 { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: #7a3d5e; margin-bottom: 6px; }
+    .modal-box p  { font-size: .95rem; color: #9a6070; margin-bottom: 20px; }
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .type-btn {
+      padding: 12px 8px; border-radius: 16px; border: 2px solid #f0ccda;
+      background: #fff0f5; cursor: pointer; text-align: center;
+      transition: background .15s, border-color .15s, transform .1s;
+      font-family: 'Patrick Hand', cursive; font-size: .9rem; color: #6e3a52;
+    }
+    .type-btn:hover   { background: #ffd9e8; border-color: #f29bba; transform: translateY(-2px); }
+    .type-btn.chosen  { background: #f7b8d0; border-color: #e84393; color: #a01050; }
+    .type-btn .emoji  { display: block; font-size: 1.8rem; margin-bottom: 4px; }
+    .modal-confirm {
+      margin-top: 20px; width: 100%;
+      background: #d4a5bb; color: #fff; border: none;
+      border-radius: 999px; padding: 12px 0;
+      font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+      cursor: pointer; transition: background .15s;
+    }
+    .modal-confirm:hover { background: #c28fab; }
+
+    /* ── Nyan Cat ────────────────────────────────────── */
+    .nyan-cat-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden; }
+    .nyan-cat {
+      position: absolute; top: 30%; left: -200px; width: 180px; height: 100px;
+      animation: flyAcross 3.5s ease-in-out forwards;
+      display: flex; align-items: center;
+    }
+    .cat-body { font-size: 60px; filter: drop-shadow(0 8px 6px rgba(0,0,0,.1)); }
+    .rainbow-trail { display: flex; margin-left: -10px; }
+    .rainbow-trail span { display: block; width: 20px; height: 40px; margin-right: 4px; border-radius: 10px; opacity: .8; }
+    @keyframes flyAcross {
+      0%   { left: -200px; transform: translateY(0)    rotate(2deg);  }
+      30%  {               transform: translateY(-20px) rotate(-3deg); }
+      60%  {               transform: translateY(10px)  rotate(2deg);  }
+      100% { left: 110%;   transform: translateY(0)    rotate(0);     }
+    }
+
+    /* ── Spinner ─────────────────────────────────────── */
+    .loading-spinner {
+      border: 3px solid #f7cfe0; border-top: 3px solid #b380a3;
+      border-radius: 50%; width: 32px; height: 32px;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* ── Scrollbar ───────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f3d9ed; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #dbb5d0; border-radius: 10px; }
+
+    /* ── Utilities ───────────────────────────────────── */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div class="w-full max-w-7xl mx-auto">
+  <div id="loginPage">
+    <div class="login-cover p-6 md:p-10 relative overflow-hidden">
+      <div class="absolute -top-4 -left-4 text-6xl opacity-30" style="transform:rotate(12deg)">🍴</div>
+      <div class="absolute bottom-4 right-6 text-6xl opacity-20">🌿</div>
+      <div class="absolute top-10 right-10 text-5xl opacity-40">✨</div>
+      <div class="relative z-10 flex flex-col items-center text-center">
+        <div class="mb-4 flex items-center justify-center gap-3">
+          <i class="fas fa-book" style="font-size:3rem;color:#b3809c"></i>
+          <i class="fas fa-utensils" style="font-size:2rem;color:#e6a5b5"></i>
+        </div>
+        <h1 class="title-font font-bold drop-shadow-sm" style="font-size:clamp(2rem,6vw,3.5rem);color:#844c6e">Recipe Book</h1>
+        <p class="text-lg handwriting mt-2 mb-6" style="color:#9f6b83">your personal kitchen scrapbook</p>
+
+        <div class="mt-2 w-full max-w-sm p-7 rounded-3xl shadow-xl border-2" style="background:rgba(255,245,251,.85);border-color:#f7ccdb">
+          <div class="handwriting mb-4" style="font-size:1.4rem;color:#a25678"><i class="fas fa-lock-open"></i> open book</div>
+          <div id="loginError" class="text-sm mb-2 hidden handwriting" style="color:#e07090"></div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="position:relative">
+              <i class="fas fa-user" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b87b98"></i>
+              <input id="username" placeholder="username (try 'liam')" value="liam"
+                class="w-full handwriting text-lg"
+                style="padding:12px 14px 12px 40px;background:rgba(255,255,255,.8);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:1rem;">
+            </div>
+            <div style="position:relative">
+              <i class="fas fa-key" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b87b98"></i>
+              <input type="password" id="password" placeholder="any password" value="sprinkles"
+                class="w-full handwriting text-lg"
+                style="padding:12px 14px 12px 40px;background:rgba(255,255,255,.8);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:1rem;">
+            </div>
+            <button id="loginBtn"
+              class="w-full handwriting font-bold"
+              style="margin-top:8px;background:#d9a5bb;color:#fff;border:none;padding:13px 0;border-radius:999px;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;font-family:'Patrick Hand',cursive;">
+              <i class="fas fa-magic"></i> open book <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ MAIN BOOK ═══════════════════ -->
+  <div id="mainApp" class="hidden">
+    <div class="book-cover relative">
+      <div class="spiral-binding">
+        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+        <div class="spiral-ring"></div><div class="spiral-ring"></div>
+      </div>
+
+      <!-- Header row -->
+      <div class="flex items-center justify-between flex-wrap gap-3 mb-3 px-2">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-utensils" style="font-size:1.8rem;color:#c48ba2"></i>
+          <h2 class="text-3xl handwriting font-semibold" style="color:#6e4d5f">
+            <span id="welcomeUser">liam</span>'s scrapbook
+          </h2>
+        </div>
+        <div class="flex gap-2 flex-wrap items-center">
+          <!-- tag search -->
+          <div style="position:relative;">
+            <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#b87b98;font-size:.85rem;pointer-events:none;"></i>
+            <input id="tagSearchInput" type="text" placeholder="search by tag…"
+              class="handwriting"
+              style="padding:8px 14px 8px 34px;background:rgba(255,255,255,.85);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:.88rem;color:#6e3a52;width:160px;transition:border-color .2s,width .2s;">
+          </div>
+          <button id="fetchRecipesBtn"
+            class="handwriting"
+            style="background:#d4e8f5;color:#476075;padding:8px 16px;border-radius:999px;border:1px solid #b7cfdf;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:.9rem;">
+            <i class="fas fa-cloud-download-alt"></i> Fetch recipes
+          </button>
+          <button id="logoutBtn"
+            class="handwriting"
+            style="background:#fcd5e4;color:#795b69;padding:8px 20px;border-radius:999px;border:1px solid #e3b6c9;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:.95rem;">
+            <i class="fas fa-sign-out-alt"></i> close
+          </button>
+        </div>
+      </div>
+
+      <div class="relative">
+        <!-- Bookmarks -->
+        <div class="bookmarks-under">
+          <div class="pull-bookmark active" data-tab="recipes"><span class="bm-icon"><i class="fas fa-utensils"></i></span><span class="bm-label">Recipes</span></div>
+          <div class="pull-bookmark" data-tab="favorites"><span class="bm-icon"><i class="fas fa-heart"></i></span><span class="bm-label">Favorites</span></div>
+          <div class="pull-bookmark" data-tab="nutrition"><span class="bm-icon"><i class="fas fa-leaf"></i></span><span class="bm-label">Nutrition</span></div>
+          <div class="pull-bookmark" data-tab="inventory"><span class="bm-icon"><i class="fas fa-box"></i></span><span class="bm-label">Inventory</span></div>
+          <div class="pull-bookmark" data-tab="grocery"><span class="bm-icon"><i class="fas fa-shopping-cart"></i></span><span class="bm-label">Grocery</span></div>
+          <div class="pull-bookmark" data-tab="ingredients"><span class="bm-icon"><i class="fas fa-carrot"></i></span><span class="bm-label">Ingredients</span></div>
+        </div>
+
+        <!-- Page -->
+        <div id="bookPages" class="book-pages" style="background:#fff3e7">
+          <div id="loadingIndicator" class="flex justify-center items-center py-8 hidden">
+            <div class="loading-spinner"></div>
+            <span class="ml-3 handwriting text-lg" style="color:#b17e97">fetching yummies…</span>
+          </div>
+          <div id="errorMessage" class="hidden text-center py-6 handwriting" style="color:#c0627e"></div>
+
+          <!-- standard table -->
+          <div class="overflow-x-auto pb-2" id="tableWrap">
+            <table class="recipe-table" id="dataTable" style="min-width:100%">
+              <thead><tr id="tableHeaderRow"></tr></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- nutrition panel (hidden by default) -->
+          <div id="nutritionPanel" class="hidden">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px;">
+              <span class="handwriting" style="color:#5e3a4e;font-size:.9rem;font-weight:600;"><i class="fas fa-filter" style="color:#c48ba2;margin-right:4px;"></i>Filter by type:</span>
+              <select id="nutritionTypeFilter"
+                style="padding:6px 16px;border-radius:999px;border:2px solid #eebfd2;background:#fff8fc;color:#6e3a52;font-family:'Patrick Hand',cursive;font-size:.88rem;outline:none;cursor:pointer;box-shadow:0 2px 6px rgba(180,120,140,.12);">
+                <option value="">All types</option>
+              </select>
+              <span class="handwriting" id="nutritionCount" style="margin-left:auto;color:#b09aaa;font-size:.82rem;"></span>
+            </div>
+            <div class="overflow-x-auto pb-2">
+              <table class="nutrition-table" id="nutritionTable" style="min-width:100%">
+                <thead><tr id="nutritionHeaderRow"></tr></thead>
+                <tbody id="nutritionBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center mt-5 handwriting px-2 pt-4"
+        style="color:#ad7d96;border-top:1px dashed #f2cedd">
+        <span><i class="fas fa-heart" style="color:#e3a5bb"></i> peek the icons →</span>
+        <span style="font-size:.85rem"><i class="far fa-sticky-note"></i> pull to read</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ RECIPE TYPE MODAL ═══════════════════ -->
+<div id="recipeTypeModal" class="modal-backdrop hidden">
+  <div class="modal-box">
+    <h2>🍽️ What kind of recipe?</h2>
+    <p>Pick a category to help organize your fetch.</p>
+    <div class="type-grid" id="typeGrid">
+      <button class="type-btn" data-type="Breakfast"><span class="emoji">🍳</span>Breakfast</button>
+      <button class="type-btn" data-type="Lunch">    <span class="emoji">🥗</span>Lunch</button>
+      <button class="type-btn" data-type="Dinner">   <span class="emoji">🍝</span>Dinner</button>
+      <button class="type-btn" data-type="Dessert">  <span class="emoji">🧁</span>Dessert</button>
+      <button class="type-btn" data-type="Snack">    <span class="emoji">🥨</span>Snack</button>
+      <button class="type-btn" data-type="Drink">    <span class="emoji">🍹</span>Drink</button>
+      <button class="type-btn" data-type="Baking">   <span class="emoji">🍞</span>Baking</button>
+      <button class="type-btn" data-type="Other">    <span class="emoji">📋</span>Other</button>
+    </div>
+    <button class="modal-confirm" id="modalConfirmBtn">
+      <i class="fas fa-cloud-download-alt"></i> Fetch this type
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════ RECIPE DETAIL MODAL ═══════════════════ -->
+<div id="recipeDetailModal" class="modal-backdrop hidden">
+  <div class="detail-modal-box">
+    <button class="detail-close" id="detailCloseBtn"><i class="fas fa-times"></i></button>
+    <div id="detailTypePill" class="detail-type-pill"></div>
+    <div id="detailTitle" class="detail-title"></div>
+    <div id="detailSource" class="detail-source"></div>
+
+    <div class="detail-section-label"><i class="fas fa-scroll"></i> Instructions</div>
+    <div id="detailInstructions" class="detail-instructions"></div>
+
+    <div class="detail-section-label"><i class="fas fa-tags"></i> Tags</div>
+    <div id="detailTags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:24px"></div>
+
+    <div id="detailNutritionSection">
+      <div class="detail-section-label"><i class="fas fa-leaf"></i> Nutrition</div>
+      <div id="detailNutritionGrid" class="detail-nutrition-grid"></div>
+    </div>
+
+    <div style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <button class="detail-fav-btn" id="detailFavBtn"><i class="fas fa-heart"></i> <span id="detailFavLabel">Add to Favorites</span></button>
+      <span id="detailRecipeId" style="font-size:.75rem;color:#cbb0bc"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ NYAN CAT ═══════════════════ -->
+<div id="nyanCatOverlay" class="nyan-cat-overlay hidden">
+  <div class="nyan-cat">
+    <span class="cat-body">🐱</span>
+    <div class="rainbow-trail">
+      <span style="background:#FFB3BA"></span><span style="background:#FFDFBA"></span>
+      <span style="background:#FFFFBA"></span><span style="background:#BAFFC9"></span>
+      <span style="background:#BAE1FF"></span><span style="background:#D4B8D4"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── Config ───────────────────────────────────────────── */
+  const API_BASE = '';  // set to your cPanel API root, e.g. '/api'
+  const USE_MOCK = true;
+
+  /* ── State ────────────────────────────────────────────── */
+  let currentUser = null;
+  let currentTab  = 'recipes';
+  let selectedType = '';
+
+  /* ── DOM refs ─────────────────────────────────────────── */
+  const loginPage         = document.getElementById('loginPage');
+  const mainApp           = document.getElementById('mainApp');
+  const loginBtn          = document.getElementById('loginBtn');
+  const logoutBtn         = document.getElementById('logoutBtn');
+  const fetchRecipesBtn   = document.getElementById('fetchRecipesBtn');
+  const usernameInput     = document.getElementById('username');
+  const passwordInput     = document.getElementById('password');
+  const loginError        = document.getElementById('loginError');
+  const welcomeUserSpan   = document.getElementById('welcomeUser');
+  const tabButtons        = document.querySelectorAll('.pull-bookmark');
+  const tableHeaderRow    = document.getElementById('tableHeaderRow');
+  const tableBody         = document.getElementById('tableBody');
+  const loadingIndicator  = document.getElementById('loadingIndicator');
+  const errorMessageDiv   = document.getElementById('errorMessage');
+  const dataTable         = document.getElementById('dataTable');
+  const tableWrap         = document.getElementById('tableWrap');
+  const nyanOverlay       = document.getElementById('nyanCatOverlay');
+  const bookPages         = document.getElementById('bookPages');
+  const nutritionPanel    = document.getElementById('nutritionPanel');
+  const nutritionTable    = document.getElementById('nutritionTable');
+  const nutritionHeaderRow= document.getElementById('nutritionHeaderRow');
+  const nutritionBody     = document.getElementById('nutritionBody');
+  const nutritionTypeFilter = document.getElementById('nutritionTypeFilter');
+  const nutritionCount    = document.getElementById('nutritionCount');
+  const tagSearchInput    = document.getElementById('tagSearchInput');
+  const recipeDetailModal  = document.getElementById('recipeDetailModal');
+  const detailCloseBtn     = document.getElementById('detailCloseBtn');
+  const detailTypePill     = document.getElementById('detailTypePill');
+  const detailTitle        = document.getElementById('detailTitle');
+  const detailSource       = document.getElementById('detailSource');
+  const detailInstructions = document.getElementById('detailInstructions');
+  const detailTags         = document.getElementById('detailTags');
+  const detailNutritionSection = document.getElementById('detailNutritionSection');
+  const detailNutritionGrid    = document.getElementById('detailNutritionGrid');
+  const detailFavBtn       = document.getElementById('detailFavBtn');
+  const detailFavLabel     = document.getElementById('detailFavLabel');
+  const detailRecipeId     = document.getElementById('detailRecipeId');
+  const recipeTypeModal    = document.getElementById('recipeTypeModal');
+  const typeGrid          = document.getElementById('typeGrid');
+  const modalConfirmBtn   = document.getElementById('modalConfirmBtn');
+
+  /* ── Page themes ──────────────────────────────────────── */
+  const pageThemes = {
+    recipes:     '#fff3e7',
+    favorites:   '#fdeff2',
+    nutrition:   '#f0f9ec',
+    inventory:   '#eff7f0',
+    grocery:     '#fef7e9',
+    ingredients: '#f3edf7'
+  };
+
+  /* ── Mock data ────────────────────────────────────────── */
+  const mockData = {
+    users: [{ user_id: 1, name: 'liam' }],
+    recipes: [
+      { recipe_id:1, recipe_name:'Carrot Cake Pancakes',  instructions:'Grate carrots, mix batter, fry on griddle.', source_api:'Spoonacular', type:'Breakfast' },
+      { recipe_id:2, recipe_name:'Spring Pea Soup',       instructions:'Simmer peas with stock, blend smooth.',       source_api:'Edamam',      type:'Lunch'     },
+      { recipe_id:3, recipe_name:'Hot Cross Buns',        instructions:'Knead dough, add spices, prove, bake.',       source_api:'Spoonacular', type:'Baking'    },
+      { recipe_id:4, recipe_name:'Lemon Tart',            instructions:'Zest lemons, blind bake shell, fill curd.',   source_api:'Edamam',      type:'Dessert'   }
+    ],
+    favorites:   [{ favorite_id:1, recipe_id:1, rating:5, notes:'Great for brunch', user_id:1 }],
+    inventory:   [{ inventory_id:1, ingredient_id:1, quantity:500, unit:'grams', expiration_date:'2025-12-01', user_id:1, ingredient_name:'Flour' }],
+    grocery:     [{ list_id:1, ingredient_id:5, quantity:6, unit:'count', is_purchased:0, user_id:1, ingredient_name:'Eggs' }],
+    ingredients: [
+      { ingredient_id:1, ingredient_name:'Flour',   default_unit:'grams' },
+      { ingredient_id:2, ingredient_name:'Carrots', default_unit:'count' }
+    ],
+    tags:        [
+      { tag_id:1, tag_name:'Vegetarian', color:'#C5E0B4' },
+      { tag_id:2, tag_name:'Quick',      color:'#F9C7B6' }
+    ],
+    recipeTags:  [{ recipe_id:1, tag_id:2 }, { recipe_id:2, tag_id:1 }],
+    nutrition: [
+      { nutrition_id:1, recipe_id:1, recipe_name:'Carrot Cake Pancakes', type:'Breakfast', calories:310, protein_g:8,  carbs_g:42, fat_g:12, fiber_g:3,  sodium_mg:320 },
+      { nutrition_id:2, recipe_id:2, recipe_name:'Spring Pea Soup',      type:'Lunch',     calories:180, protein_g:10, carbs_g:28, fat_g:4,  fiber_g:7,  sodium_mg:510 },
+      { nutrition_id:3, recipe_id:3, recipe_name:'Hot Cross Buns',       type:'Baking',    calories:250, protein_g:6,  carbs_g:48, fat_g:5,  fiber_g:2,  sodium_mg:190 },
+      { nutrition_id:4, recipe_id:4, recipe_name:'Lemon Tart',           type:'Dessert',   calories:390, protein_g:5,  carbs_g:54, fat_g:18, fiber_g:1,  sodium_mg:140 }
+    ]
+  };
+
+  /* ── Helpers ──────────────────────────────────────────── */
+  function getTagsForRecipe(recipeId) {
+    const ids = mockData.recipeTags.filter(rt => rt.recipe_id === recipeId).map(rt => rt.tag_id);
+    return mockData.tags.filter(t => ids.includes(t.tag_id));
+  }
+  function isFavorited(recipeId) {
+    return currentUser && mockData.favorites.some(f => f.recipe_id === recipeId && f.user_id === currentUser.user_id);
+  }
+  function showLoading(s) {
+    loadingIndicator.classList.toggle('hidden', !s);
+    tableWrap.classList.toggle('hidden', s || currentTab === 'nutrition');
+    nutritionPanel.classList.toggle('hidden', s || currentTab !== 'nutrition');
+  }
+  function showError(m) { errorMessageDiv.textContent = m; errorMessageDiv.classList.remove('hidden'); }
+  function hideError()  { errorMessageDiv.classList.add('hidden'); }
+
+  /* ── API layer ────────────────────────────────────────── */
+  async function apiRequest(endpoint, options) {
+    options = options || {};
+    if (USE_MOCK) {
+      await new Promise(r => setTimeout(r, 280));
+      return mockResponse(endpoint, options);
+    }
+    const resp = await fetch(API_BASE + endpoint, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    return resp.json();
+  }
+
+  function mockResponse(endpoint, options) {
+    const method = options.method || 'GET';
+    const userId = currentUser ? currentUser.user_id : 1;
+
+    if (endpoint === '/login' && method === 'POST') {
+      const body = JSON.parse(options.body || '{}');
+      const user = mockData.users.find(u => u.name === body.username);
+      if (user) return { success: true, user: { user_id: user.user_id, name: user.name } };
+      throw new Error('Invalid user');
+    }
+    if (endpoint === '/fetch-external-recipes' && method === 'POST') {
+      const body = JSON.parse(options.body || '{}');
+      const type = body.type || 'Other';
+      const newId = mockData.recipes.length + 10;
+      mockData.recipes.push({
+        recipe_id: newId,
+        recipe_name: type + ' Surprise',
+        instructions: 'A delicious ' + type.toLowerCase() + ' recipe fetched from the API.',
+        source_api: 'Spoonacular',
+        type: type
+      });
+      return { success: true, added: 1, type: type };
+    }
+    if (endpoint === '/favorite' && method === 'POST') {
+      const { recipe_id } = JSON.parse(options.body);
+      const idx = mockData.favorites.findIndex(f => f.recipe_id === recipe_id && f.user_id === userId);
+      if (idx >= 0) { mockData.favorites.splice(idx, 1); return { favorited: false }; }
+      mockData.favorites.push({ favorite_id: Date.now(), recipe_id, rating: 5, notes: '', user_id: userId });
+      return { favorited: true };
+    }
+    if (endpoint === '/add-tag' && method === 'POST') {
+      const { recipe_id, tag_name } = JSON.parse(options.body);
+      let tag = mockData.tags.find(t => t.tag_name.toLowerCase() === tag_name.toLowerCase());
+      if (!tag) { tag = { tag_id: mockData.tags.length + 10, tag_name, color: '#D5B8DA' }; mockData.tags.push(tag); }
+      if (!mockData.recipeTags.some(rt => rt.recipe_id === recipe_id && rt.tag_id === tag.tag_id))
+        mockData.recipeTags.push({ recipe_id, tag_id: tag.tag_id });
+      return { success: true };
+    }
+    if (endpoint === '/remove-tag' && method === 'POST') {
+      const { recipe_id, tag_id } = JSON.parse(options.body);
+      mockData.recipeTags = mockData.recipeTags.filter(rt => !(rt.recipe_id === recipe_id && rt.tag_id === tag_id));
+      return { success: true };
+    }
+    if (endpoint.startsWith('/recipes'))     return mockData.recipes;
+    if (endpoint.startsWith('/favorites'))   return mockData.favorites.filter(f => f.user_id === userId).map(f => ({ ...f, recipe_name: (mockData.recipes.find(r => r.recipe_id === f.recipe_id) || {}).recipe_name }));
+    if (endpoint.startsWith('/nutrition'))   return mockData.nutrition;
+    if (endpoint.startsWith('/inventory'))   return mockData.inventory.filter(i => i.user_id === userId);
+    if (endpoint.startsWith('/grocery'))     return mockData.grocery.filter(g => g.user_id === userId);
+    if (endpoint.startsWith('/ingredients')) return mockData.ingredients;
+    return [];
+  }
+
+  /* ── Table rendering ──────────────────────────────────── */
+  function renderHeaders(cols) {
+    tableHeaderRow.innerHTML = '';
+    cols.forEach(function(c) {
+      var th = document.createElement('th');
+      th.textContent = c;
+      tableHeaderRow.appendChild(th);
+    });
+  }
+
+  function renderBody(data, columns, mapper, tabId) {
+    tableBody.innerHTML = '';
+    if (!data.length) {
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      td.colSpan = columns.length;
+      td.className = 'text-center py-6 handwriting';
+      td.style.color = '#a86f89';
+      td.textContent = '✨ nothing pasted here yet ✨';
+      tr.appendChild(td);
+      tableBody.appendChild(tr);
+      return;
+    }
+    data.forEach(function(item) {
+      var tr = document.createElement('tr');
+      if (tabId === 'recipes') {
+        tr.dataset.recipeId = item.recipe_id;
+        tr.style.cursor = 'pointer';
+        tr.title = 'Click to view recipe';
+      }
+      mapper(item).forEach(function(val) {
+        var td = document.createElement('td');
+        td.innerHTML = val;
+        tr.appendChild(td);
+      });
+      tableBody.appendChild(tr);
+    });
+
+    if (tabId === 'recipes') {
+      document.querySelectorAll('.fav-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          apiRequest('/favorite', { method: 'POST', body: JSON.stringify({ recipe_id: parseInt(btn.dataset.recipeId) }) })
+            .then(function() { loadTabData('recipes'); })
+            .catch(function() { showError('Could not toggle favorite.'); });
+        });
+      });
+      document.querySelectorAll('.add-tag-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var tagName = prompt('Enter tag name:');
+          if (tagName && tagName.trim()) {
+            apiRequest('/add-tag', { method: 'POST', body: JSON.stringify({ recipe_id: parseInt(btn.dataset.recipeId), tag_name: tagName.trim() }) })
+              .then(function() { loadTabData('recipes'); });
+          }
+        });
+      });
+      document.querySelectorAll('.tag-remove').forEach(function(icon) {
+        icon.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (confirm('Remove this tag?')) {
+            apiRequest('/remove-tag', { method: 'POST', body: JSON.stringify({ recipe_id: parseInt(icon.dataset.recipeId), tag_id: parseInt(icon.dataset.tagId) }) })
+              .then(function() { loadTabData('recipes'); });
+          }
+        });
+      });
+
+      // row click → detail modal
+      document.querySelectorAll('#tableBody tr[data-recipe-id]').forEach(function(row) {
+        row.addEventListener('click', function(e) {
+          // don't open modal if user clicked a button or icon inside the row
+          if (e.target.closest('button, i')) return;
+          var id = parseInt(row.dataset.recipeId);
+          var recipe = mockData.recipes.find(function(r) { return r.recipe_id === id; });
+          if (recipe) openRecipeDetail(recipe);
+        });
+      });
+    }
+  }
+
+  /* ── Nutrition panel ──────────────────────────────────── */
+  function renderNutrition(data) {
+    // populate type filter
+    var types = Array.from(new Set(data.map(function(n) { return n.type; }))).sort();
+    nutritionTypeFilter.innerHTML = '<option value="">All types</option>';
+    types.forEach(function(t) {
+      var opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      nutritionTypeFilter.appendChild(opt);
+    });
+
+    function draw(rows) {
+      // headers
+      nutritionHeaderRow.innerHTML = '';
+      var cols = ['Recipe', 'Type', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fat (g)', 'Fiber (g)', 'Sodium (mg)'];
+      cols.forEach(function(c) {
+        var th = document.createElement('th'); th.textContent = c;
+        nutritionHeaderRow.appendChild(th);
+      });
+
+      nutritionBody.innerHTML = '';
+      if (!rows.length) {
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.colSpan = cols.length;
+        td.className = 'handwriting';
+        td.style.cssText = 'text-align:center;padding:24px;color:#a86f89;';
+        td.textContent = '✨ no nutrition data for this filter ✨';
+        tr.appendChild(td); nutritionBody.appendChild(tr);
+        nutritionCount.textContent = '';
+        return;
+      }
+
+      var maxCal = Math.max.apply(null, rows.map(function(r) { return r.calories; }));
+      rows.forEach(function(row) {
+        var tr = document.createElement('tr');
+        var barPct = Math.round((row.calories / maxCal) * 100);
+        var barHtml = '<div class="nutrition-bar-wrap"><div class="nutrition-bar" style="width:' + barPct + '%"></div></div>';
+        var cells = [
+          row.recipe_name,
+          '<span style="background:#f3e8ff;padding:2px 10px;border-radius:999px;font-size:.78rem;color:#5e3a7e">' + row.type + '</span>',
+          row.calories + ' ' + barHtml,
+          row.protein_g,
+          row.carbs_g,
+          row.fat_g,
+          row.fiber_g,
+          row.sodium_mg
+        ];
+        cells.forEach(function(val) {
+          var td = document.createElement('td'); td.innerHTML = val; tr.appendChild(td);
+        });
+        nutritionBody.appendChild(tr);
+      });
+      nutritionCount.textContent = rows.length + ' recipe' + (rows.length !== 1 ? 's' : '');
+    }
+
+    draw(data);
+
+    nutritionTypeFilter.onchange = function() {
+      var v = nutritionTypeFilter.value;
+      draw(v ? data.filter(function(n) { return n.type === v; }) : data);
+    };
+  }
+
+  /* ── Tab loader ───────────────────────────────────────── */
+  async function loadTabData(tabId) {
+    if (!currentUser) return;
+    bookPages.style.background = pageThemes[tabId] || pageThemes.recipes;
+    bookPages.classList.add('page-flip');
+    setTimeout(function() { bookPages.classList.remove('page-flip'); }, 350);
+
+    hideError();
+    showLoading(true);
+
+    try {
+      var userId = currentUser.user_id;
+
+      if (tabId === 'nutrition') {
+        var ndata = await apiRequest('/nutrition?user_id=' + userId);
+        showLoading(false);
+        renderNutrition(ndata);
+        return;
+      }
+
+      var columns = [], data = [], mapper = function() { return []; };
+      switch (tabId) {
+        case 'recipes':
+          columns = ['Name', 'Type', 'Instructions', 'Source', 'Tags', '❤️', '+Tag'];
+          data = await apiRequest('/recipes?user_id=' + userId);
+          mapper = function(r) {
+            var tags = getTagsForRecipe(r.recipe_id);
+            var tagHtml = tags.map(function(t) {
+              return '<span class="tag-bookmark">' + t.tag_name +
+                ' <i class="fas fa-times-circle tag-remove" data-recipe-id="' + r.recipe_id + '" data-tag-id="' + t.tag_id + '"></i></span>';
+            }).join('');
+            var fav = isFavorited(r.recipe_id);
+            return [
+              r.recipe_name,
+              '<span style="background:#f3e8ff;padding:2px 10px;border-radius:999px;font-size:.78rem;color:#5e3a7e">' + (r.type || '—') + '</span>',
+              (r.instructions || '').substring(0, 28) + '…',
+              r.source_api || '',
+              tagHtml || '—',
+              '<button class="fav-btn ' + (fav ? 'favorited' : '') + '" data-recipe-id="' + r.recipe_id + '">' + (fav ? '❤️' : '🤍') + '</button>',
+              '<button class="add-tag-btn handwriting" data-recipe-id="' + r.recipe_id + '" style="font-size:.78rem;background:#e3d7f5;border:none;padding:4px 12px;border-radius:999px;cursor:pointer;">➕ tag</button>'
+            ];
+          };
+          break;
+        case 'favorites':
+          columns = ['Recipe', 'Rating', 'Notes'];
+          data = await apiRequest('/favorites?user_id=' + userId);
+          mapper = function(f) { return [f.recipe_name, (f.rating || 0) + '★', f.notes || '']; };
+          break;
+        case 'inventory':
+          columns = ['Ingredient', 'Qty', 'Unit', 'Expiration'];
+          data = await apiRequest('/inventory?user_id=' + userId);
+          mapper = function(i) { return [i.ingredient_name, i.quantity, i.unit, i.expiration_date || '—']; };
+          break;
+        case 'grocery':
+          columns = ['Ingredient', 'Qty', 'Unit', 'Purchased'];
+          data = await apiRequest('/grocery?user_id=' + userId);
+          mapper = function(g) { return [g.ingredient_name, g.quantity, g.unit, g.is_purchased ? '✅' : '⬜']; };
+          break;
+        case 'ingredients':
+          columns = ['Ingredient', 'Default Unit'];
+          data = await apiRequest('/ingredients');
+          mapper = function(i) { return [i.ingredient_name, i.default_unit]; };
+          break;
+      }
+
+      renderHeaders(columns);
+      renderBody(data, columns, mapper, tabId);
+    } catch (err) {
+      showError("Couldn't load " + tabId + '.');
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  /* ── Tab switching ────────────────────────────────────── */
+  function setActiveTab(tabId) {
+    tabButtons.forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+    currentTab = tabId;
+    loadTabData(tabId);
+  }
+
+  tabButtons.forEach(function(btn) {
+    btn.addEventListener('click', function() { setActiveTab(btn.dataset.tab); });
+  });
+
+  /* ── Tag search ───────────────────────────────────────── */
+  tagSearchInput.addEventListener('input', function() {
+    var query = tagSearchInput.value.trim().toLowerCase();
+
+    // only filter on recipes tab; if not there, switch to it first
+    if (currentTab !== 'recipes') {
+      setActiveTab('recipes');
+      return;
+    }
+
+    var rows = tableBody.querySelectorAll('tr[data-recipe-id]');
+    rows.forEach(function(row) {
+      if (!query) { row.style.display = ''; return; }
+      var id = parseInt(row.dataset.recipeId);
+      var tags = getTagsForRecipe(id);
+      var match = tags.some(function(t) {
+        return t.tag_name.toLowerCase().includes(query);
+      });
+      row.style.display = match ? '' : 'none';
+    });
+
+    // show empty state if all hidden
+    var visible = tableBody.querySelectorAll('tr[data-recipe-id]:not([style*="none"])').length;
+    var emptyRow = tableBody.querySelector('tr.search-empty');
+    if (query && visible === 0) {
+      if (!emptyRow) {
+        var tr = document.createElement('tr');
+        tr.className = 'search-empty';
+        var td = document.createElement('td');
+        td.colSpan = 7;
+        td.style.cssText = 'text-align:center;padding:24px;color:#b09aaa;font-family:Patrick Hand,cursive;font-size:1rem;';
+        td.textContent = '✨ no recipes tagged "' + tagSearchInput.value.trim() + '"';
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
+      }
+    } else if (emptyRow) {
+      emptyRow.remove();
+    }
+  });
+
+  // clear search when switching away from recipes tab
+  var _origSetActiveTab = setActiveTab;
+  setActiveTab = function(tabId) {
+    if (tabId !== 'recipes') tagSearchInput.value = '';
+    _origSetActiveTab(tabId);
+  };
+  function openRecipeDetail(recipe) {
+    var tags = getTagsForRecipe(recipe.recipe_id);
+    var nut  = mockData.nutrition.find(function(n) { return n.recipe_id === recipe.recipe_id; });
+    var fav  = isFavorited(recipe.recipe_id);
+
+    detailTypePill.textContent     = recipe.type || 'Uncategorized';
+    detailTitle.textContent        = recipe.recipe_name;
+    detailSource.innerHTML         = recipe.source_api
+      ? '<i class="fas fa-database"></i> via ' + recipe.source_api : '';
+    detailInstructions.textContent = recipe.instructions || 'No instructions recorded.';
+    detailRecipeId.textContent     = 'recipe #' + recipe.recipe_id;
+
+    // tags
+    detailTags.innerHTML = '';
+    if (tags.length) {
+      tags.forEach(function(t) {
+        var s = document.createElement('span');
+        s.className = 'tag-bookmark';
+        s.textContent = t.tag_name;
+        detailTags.appendChild(s);
+      });
+    } else {
+      detailTags.innerHTML = '<span style="color:#cbb0bc;font-size:.85rem">no tags yet</span>';
+    }
+
+    // nutrition
+    if (nut) {
+      detailNutritionSection.style.display = '';
+      detailNutritionGrid.innerHTML = [
+        { val: nut.calories,          lbl: 'Calories' },
+        { val: nut.protein_g  + 'g',  lbl: 'Protein'  },
+        { val: nut.carbs_g    + 'g',  lbl: 'Carbs'    },
+        { val: nut.fat_g      + 'g',  lbl: 'Fat'      },
+        { val: nut.fiber_g    + 'g',  lbl: 'Fiber'    },
+        { val: nut.sodium_mg  + 'mg', lbl: 'Sodium'   }
+      ].map(function(n) {
+        return '<div class="detail-nut-card"><div class="val">' + n.val + '</div><div class="lbl">' + n.lbl + '</div></div>';
+      }).join('');
+    } else {
+      detailNutritionSection.style.display = 'none';
+    }
+
+    // fav button
+    function syncFavBtn(f) {
+      detailFavBtn.className = 'detail-fav-btn' + (f ? ' favorited' : '');
+      detailFavLabel.textContent = f ? 'Favorited' : 'Add to Favorites';
+      detailFavBtn.querySelector('i').className = f ? 'fas fa-heart' : 'far fa-heart';
+    }
+    syncFavBtn(fav);
+    detailFavBtn.onclick = function() {
+      apiRequest('/favorite', { method: 'POST', body: JSON.stringify({ recipe_id: recipe.recipe_id }) })
+        .then(function(res) {
+          syncFavBtn(res.favorited);
+          if (currentTab === 'recipes') loadTabData('recipes');
+        });
+    };
+
+    recipeDetailModal.classList.remove('hidden');
+  }
+
+  function closeRecipeDetail() { recipeDetailModal.classList.add('hidden'); }
+
+  detailCloseBtn.addEventListener('click', closeRecipeDetail);
+  recipeDetailModal.addEventListener('click', function(e) {
+    if (e.target === recipeDetailModal) closeRecipeDetail();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeRecipeDetail(); closeTypeModal(); }
+  });
+
+  /* ── Recipe-type modal ────────────────────────────────── */
+  function openTypeModal() {
+    selectedType = '';
+    document.querySelectorAll('.type-btn').forEach(function(b) { b.classList.remove('chosen'); });
+    recipeTypeModal.classList.remove('hidden');
+  }
+  function closeTypeModal() { recipeTypeModal.classList.add('hidden'); }
+
+  typeGrid.querySelectorAll('.type-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      typeGrid.querySelectorAll('.type-btn').forEach(function(b) { b.classList.remove('chosen'); });
+      btn.classList.add('chosen');
+      selectedType = btn.dataset.type;
+    });
+  });
+
+  recipeTypeModal.addEventListener('click', function(e) {
+    if (e.target === recipeTypeModal) closeTypeModal();
+  });
+
+  modalConfirmBtn.addEventListener('click', async function() {
+    if (!selectedType) { alert('Please pick a recipe type first.'); return; }
+    closeTypeModal();
+    showLoading(true);
+    try {
+      var res = await apiRequest('/fetch-external-recipes', { method: 'POST', body: JSON.stringify({ type: selectedType }) });
+      alert('Added ' + res.added + ' new ' + res.type + ' recipe!');
+      if (currentTab === 'recipes') loadTabData('recipes');
+    } catch (e) {
+      alert('Fetch simulated.');
+    } finally {
+      showLoading(false);
+    }
+  });
+
+  fetchRecipesBtn.addEventListener('click', function() {
+    if (!currentUser) return;
+    openTypeModal();
+  });
+
+  /* ── Auth ─────────────────────────────────────────────── */
+  function playNyanCat() {
+    nyanOverlay.classList.remove('hidden');
+    setTimeout(function() { nyanOverlay.classList.add('hidden'); }, 3600);
+  }
+
+  async function handleLogin() {
+    var username = usernameInput.value.trim();
+    if (!username) { loginError.textContent = 'enter a username'; loginError.classList.remove('hidden'); return; }
+    loginError.classList.add('hidden');
+    try {
+      var resp = await apiRequest('/login', { method: 'POST', body: JSON.stringify({ username: username, password: passwordInput.value }) });
+      currentUser = resp.user;
+      welcomeUserSpan.textContent = currentUser.name;
+      loginPage.classList.add('hidden');
+      mainApp.classList.remove('hidden');
+      setActiveTab('recipes');
+      playNyanCat();
+    } catch (e) {
+      loginError.textContent = 'invalid user — try "liam"';
+      loginError.classList.remove('hidden');
+    }
+  }
+
+  function showLoginPage() {
+    mainApp.classList.add('hidden');
+    loginPage.classList.remove('hidden');
+    currentUser = null;
+  }
+
+  loginBtn.addEventListener('click', function(e) { e.preventDefault(); handleLogin(); });
+  passwordInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') handleLogin(); });
+  usernameInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') handleLogin(); });
+  logoutBtn.addEventListener('click', showLoginPage);
+
+  /* ── Boot ─────────────────────────────────────────────── */
+  showLoginPage();
+})();
+</script>
+</body>
+</html>
