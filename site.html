@@ -595,7 +595,7 @@
   "use strict";
 
   /* ── Config ───────────────────────────────────────────── */
-  const API_BASE = 'https://liammckenzie.rhody.dev/csc436_projects/api';  
+  const API_BASE = 'https://liammckenzie.rhody.dev/csc436_projects/api';
   const USE_MOCK = false;
 
   /* ── State ────────────────────────────────────────────── */
@@ -707,7 +707,7 @@
       await new Promise(r => setTimeout(r, 280));
       return mockResponse(endpoint, options);
     }
-    const url = API_BASE + endpoint + '.php';
+    const url = API_BASE + endpoint.split('?')[0] + '.php' + (endpoint.includes('?') ? '?' + endpoint.split('?')[1] : '');
     const resp = await fetch(url, {
       headers: { 'Content-Type': 'application/json' },
       ...options
