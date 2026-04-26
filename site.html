@@ -707,7 +707,8 @@
       await new Promise(r => setTimeout(r, 280));
       return mockResponse(endpoint, options);
     }
-    const resp = await fetch(API_BASE + endpoint, {
+    const url = API_BASE + endpoint + '.php';
+    const resp = await fetch(url, {
       headers: { 'Content-Type': 'application/json' },
       ...options
     });
