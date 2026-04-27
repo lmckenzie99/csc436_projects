@@ -6,14 +6,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_err('POST only', 405);
 
 $body     = get_body();
 $username = sanitize_str($body['username'] ?? '', 100);
-$password = $body['password'] ?? ''; 
+$password = $body['password'] ?? '';
 
 if (!$username) json_err('Username required');
 
 $user = pdo($pdo, 'SELECT user_id, name, password FROM Users WHERE name = ? LIMIT 1', [$username])->fetch();
 
 if (!$user) json_err('Invalid credentials', 401);
-if ($password !== $user['password']) json_err('Invalid credentials', 401);
+
+// Support both bcrypt hashes (new users) and plain text (legacy)
+$valid = password_verify($password, $user['password'])
+      || $password === $user['password'];
+
+if (!$valid) json_err('Invalid credentials', 401);
 
 json_out([
     'success' => true,

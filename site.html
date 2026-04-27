@@ -410,27 +410,75 @@
         <p class="text-lg handwriting mt-2 mb-6" style="color:#9f6b83">your personal kitchen scrapbook</p>
 
         <div class="mt-2 w-full max-w-sm p-7 rounded-3xl shadow-xl border-2" style="background:rgba(255,245,251,.85);border-color:#f7ccdb">
-          <div class="handwriting mb-4" style="font-size:1.4rem;color:#a25678"><i class="fas fa-lock-open"></i> open book</div>
-          <div id="loginError" class="text-sm mb-2 hidden handwriting" style="color:#e07090"></div>
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <div style="position:relative">
-              <i class="fas fa-user" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b87b98"></i>
-              <input id="username" placeholder="username (try 'liam')" value="liam"
-                class="w-full handwriting text-lg"
-                style="padding:12px 14px 12px 40px;background:rgba(255,255,255,.8);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:1rem;">
+
+          <!-- Login form -->
+          <div id="loginForm">
+            <div class="handwriting mb-4" style="font-size:1.4rem;color:#a25678"><i class="fas fa-lock-open"></i> open book</div>
+            <div id="loginError" class="text-sm mb-2 hidden handwriting" style="color:#e07090"></div>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <div style="position:relative">
+                <i class="fas fa-user" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b87b98"></i>
+                <input id="username" placeholder="username" value="liam"
+                  class="w-full handwriting"
+                  style="padding:12px 14px 12px 40px;background:rgba(255,255,255,.8);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:1rem;">
+              </div>
+              <div style="position:relative">
+                <i class="fas fa-key" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b87b98"></i>
+                <input type="password" id="password" placeholder="password" value="sprinkles"
+                  class="w-full handwriting"
+                  style="padding:12px 14px 12px 40px;background:rgba(255,255,255,.8);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:1rem;">
+              </div>
+              <button id="loginBtn"
+                class="w-full handwriting font-bold"
+                style="margin-top:8px;background:#d9a5bb;color:#fff;border:none;padding:13px 0;border-radius:999px;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;font-family:'Patrick Hand',cursive;">
+                <i class="fas fa-magic"></i> open book <i class="fas fa-arrow-right"></i>
+              </button>
             </div>
-            <div style="position:relative">
-              <i class="fas fa-key" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b87b98"></i>
-              <input type="password" id="password" placeholder="any password" value="sprinkles"
-                class="w-full handwriting text-lg"
-                style="padding:12px 14px 12px 40px;background:rgba(255,255,255,.8);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:1rem;">
+            <div style="margin-top:16px;text-align:center;">
+              <span class="handwriting" style="color:#b09aaa;font-size:.9rem;">new here? </span>
+              <button id="showRegisterBtn" class="handwriting" style="background:none;border:none;color:#c48ba2;font-size:.9rem;cursor:pointer;text-decoration:underline;font-family:'Patrick Hand',cursive;">
+                start a new recipe book →
+              </button>
             </div>
-            <button id="loginBtn"
-              class="w-full handwriting font-bold"
-              style="margin-top:8px;background:#d9a5bb;color:#fff;border:none;padding:13px 0;border-radius:999px;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;font-family:'Patrick Hand',cursive;">
-              <i class="fas fa-magic"></i> open book <i class="fas fa-arrow-right"></i>
-            </button>
           </div>
+
+          <!-- Register form -->
+          <div id="registerForm" class="hidden">
+            <div class="handwriting mb-4" style="font-size:1.4rem;color:#a25678"><i class="fas fa-book-open"></i> new recipe book</div>
+            <div id="registerError" class="text-sm mb-2 hidden handwriting" style="color:#e07090"></div>
+            <div id="registerSuccess" class="text-sm mb-2 hidden handwriting" style="color:#5a9a5a"></div>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <div style="position:relative">
+                <i class="fas fa-user" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b87b98"></i>
+                <input id="regUsername" placeholder="choose a username" maxlength="50"
+                  class="w-full handwriting"
+                  style="padding:12px 14px 12px 40px;background:rgba(255,255,255,.8);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:1rem;">
+              </div>
+              <div style="position:relative">
+                <i class="fas fa-key" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b87b98"></i>
+                <input type="password" id="regPassword" placeholder="choose a password" maxlength="100"
+                  class="w-full handwriting"
+                  style="padding:12px 14px 12px 40px;background:rgba(255,255,255,.8);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:1rem;">
+              </div>
+              <div style="position:relative">
+                <i class="fas fa-key" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b87b98"></i>
+                <input type="password" id="regPasswordConfirm" placeholder="confirm password" maxlength="100"
+                  class="w-full handwriting"
+                  style="padding:12px 14px 12px 40px;background:rgba(255,255,255,.8);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:1rem;">
+              </div>
+              <button id="registerBtn"
+                class="w-full handwriting font-bold"
+                style="margin-top:8px;background:#a5c9d9;color:#fff;border:none;padding:13px 0;border-radius:999px;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;font-family:'Patrick Hand',cursive;">
+                <i class="fas fa-plus"></i> create my book
+              </button>
+            </div>
+            <div style="margin-top:16px;text-align:center;">
+              <button id="showLoginBtn" class="handwriting" style="background:none;border:none;color:#c48ba2;font-size:.9rem;cursor:pointer;text-decoration:underline;font-family:'Patrick Hand',cursive;">
+                ← already have a book? sign in
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -627,8 +675,6 @@
   "use strict";
 
   /* ── Config ───────────────────────────────────────────── */
-  const API_BASE = 'https://liammckenzie.rhody.dev/csc436_projects/api';
-  const USE_MOCK = false;
 
   /* ── State ────────────────────────────────────────────── */
   let currentUser = null;
@@ -650,6 +696,16 @@
   const passwordInput     = document.getElementById('password');
   const loginError        = document.getElementById('loginError');
   const welcomeUserSpan   = document.getElementById('welcomeUser');
+  const loginFormEl       = document.getElementById('loginForm');
+  const registerFormEl    = document.getElementById('registerForm');
+  const showRegisterBtn   = document.getElementById('showRegisterBtn');
+  const showLoginBtn      = document.getElementById('showLoginBtn');
+  const registerBtn       = document.getElementById('registerBtn');
+  const regUsername       = document.getElementById('regUsername');
+  const regPassword       = document.getElementById('regPassword');
+  const regPasswordConfirm= document.getElementById('regPasswordConfirm');
+  const registerError     = document.getElementById('registerError');
+  const registerSuccess   = document.getElementById('registerSuccess');
   const tabButtons        = document.querySelectorAll('.pull-bookmark');
   const tableHeaderRow    = document.getElementById('tableHeaderRow');
   const tableBody         = document.getElementById('tableBody');
@@ -699,46 +755,12 @@
     ingredients: '#f3edf7'
   };
 
-  /* ── Mock data ────────────────────────────────────────── */
-  const mockData = {
-    users: [{ user_id: 1, name: 'liam' }],
-    recipes: [
-      { recipe_id:1, recipe_name:'Carrot Cake Pancakes',  instructions:'Grate carrots, mix batter, fry on griddle.', source_api:'Spoonacular', type:'Breakfast' },
-      { recipe_id:2, recipe_name:'Spring Pea Soup',       instructions:'Simmer peas with stock, blend smooth.',       source_api:'Edamam',      type:'Lunch'     },
-      { recipe_id:3, recipe_name:'Hot Cross Buns',        instructions:'Knead dough, add spices, prove, bake.',       source_api:'Spoonacular', type:'Baking'    },
-      { recipe_id:4, recipe_name:'Lemon Tart',            instructions:'Zest lemons, blind bake shell, fill curd.',   source_api:'Edamam',      type:'Dessert'   }
-    ],
-    favorites:   [{ favorite_id:1, recipe_id:1, rating:5, notes:'Great for brunch', user_id:1 }],
-    inventory:   [{ inventory_id:1, ingredient_id:1, quantity:500, unit:'grams', expiration_date:'2025-12-01', user_id:1, ingredient_name:'Flour' }],
-    grocery:     [{ list_id:1, ingredient_id:5, quantity:6, unit:'count', is_purchased:0, user_id:1, ingredient_name:'Eggs' }],
-    ingredients: [
-      { ingredient_id:1, ingredient_name:'Flour',   default_unit:'grams' },
-      { ingredient_id:2, ingredient_name:'Carrots', default_unit:'count' }
-    ],
-    tags:        [
-      { tag_id:1, tag_name:'Vegetarian', color:'#C5E0B4' },
-      { tag_id:2, tag_name:'Quick',      color:'#F9C7B6' }
-    ],
-    recipeTags:  [{ recipe_id:1, tag_id:2 }, { recipe_id:2, tag_id:1 }],
-    nutrition: [
-      { nutrition_id:1, recipe_id:1, recipe_name:'Carrot Cake Pancakes', type:'Breakfast', calories:310, protein_g:8,  carbs_g:42, fat_g:12, fiber_g:3,  sodium_mg:320 },
-      { nutrition_id:2, recipe_id:2, recipe_name:'Spring Pea Soup',      type:'Lunch',     calories:180, protein_g:10, carbs_g:28, fat_g:4,  fiber_g:7,  sodium_mg:510 },
-      { nutrition_id:3, recipe_id:3, recipe_name:'Hot Cross Buns',       type:'Baking',    calories:250, protein_g:6,  carbs_g:48, fat_g:5,  fiber_g:2,  sodium_mg:190 },
-      { nutrition_id:4, recipe_id:4, recipe_name:'Lemon Tart',           type:'Dessert',   calories:390, protein_g:5,  carbs_g:54, fat_g:18, fiber_g:1,  sodium_mg:140 }
-    ]
-  };
-
   /* ── Helpers ──────────────────────────────────────────── */
   function getTagsForRecipe(recipeId) {
-    if (USE_MOCK) {
-      var ids = mockData.recipeTags.filter(function(rt) { return rt.recipe_id === recipeId; }).map(function(rt) { return rt.tag_id; });
-      return mockData.tags.filter(function(t) { return ids.includes(t.tag_id); });
-    }
     var ids = liveRecipeTags.filter(function(rt) { return parseInt(rt.recipe_id) === recipeId; }).map(function(rt) { return parseInt(rt.tag_id); });
     return liveTags.filter(function(t) { return ids.includes(parseInt(t.tag_id)); });
   }
   function isFavorited(recipeId) {
-    if (USE_MOCK) return currentUser && mockData.favorites.some(function(f) { return f.recipe_id === recipeId && f.user_id === currentUser.user_id; });
     return currentUser && liveFavorites.some(function(f) { return parseInt(f.recipe_id) === recipeId; });
   }
   function showLoading(s) {
@@ -753,69 +775,19 @@
   /* ── API layer ────────────────────────────────────────── */
   async function apiRequest(endpoint, options) {
     options = options || {};
-    if (USE_MOCK) {
-      await new Promise(r => setTimeout(r, 280));
-      return mockResponse(endpoint, options);
-    }
-    const url = API_BASE + endpoint.split('?')[0] + '.php' + (endpoint.includes('?') ? '?' + endpoint.split('?')[1] : '');
-    const resp = await fetch(url, {
+    var url = 'https://liammckenzie.rhody.dev/csc436_projects/api'
+      + endpoint.split('?')[0] + '.php'
+      + (endpoint.includes('?') ? '?' + endpoint.split('?')[1] : '');
+    var resp = await fetch(url, {
       headers: { 'Content-Type': 'application/json' },
-      ...options
+      method: options.method || 'GET',
+      body: options.body || undefined
     });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    if (!resp.ok) {
+      var err = await resp.json().catch(function() { return {}; });
+      throw new Error(err.error || 'HTTP ' + resp.status);
+    }
     return resp.json();
-  }
-
-  function mockResponse(endpoint, options) {
-    const method = options.method || 'GET';
-    const userId = currentUser ? currentUser.user_id : 1;
-
-    if (endpoint === '/login' && method === 'POST') {
-      const body = JSON.parse(options.body || '{}');
-      const user = mockData.users.find(u => u.name === body.username);
-      if (user) return { success: true, user: { user_id: user.user_id, name: user.name } };
-      throw new Error('Invalid user');
-    }
-    if (endpoint === '/fetch-external-recipes' && method === 'POST') {
-      const body = JSON.parse(options.body || '{}');
-      const type = body.type || 'Other';
-      const newId = mockData.recipes.length + 10;
-      mockData.recipes.push({
-        recipe_id: newId,
-        recipe_name: type + ' Surprise',
-        instructions: 'A delicious ' + type.toLowerCase() + ' recipe fetched from the API.',
-        source_api: 'Spoonacular',
-        type: type
-      });
-      return { success: true, added: 1, type: type };
-    }
-    if (endpoint === '/favorite' && method === 'POST') {
-      const { recipe_id } = JSON.parse(options.body);
-      const idx = mockData.favorites.findIndex(f => f.recipe_id === recipe_id && f.user_id === userId);
-      if (idx >= 0) { mockData.favorites.splice(idx, 1); return { favorited: false }; }
-      mockData.favorites.push({ favorite_id: Date.now(), recipe_id, rating: 5, notes: '', user_id: userId });
-      return { favorited: true };
-    }
-    if (endpoint === '/add-tag' && method === 'POST') {
-      const { recipe_id, tag_name } = JSON.parse(options.body);
-      let tag = mockData.tags.find(t => t.tag_name.toLowerCase() === tag_name.toLowerCase());
-      if (!tag) { tag = { tag_id: mockData.tags.length + 10, tag_name, color: '#D5B8DA' }; mockData.tags.push(tag); }
-      if (!mockData.recipeTags.some(rt => rt.recipe_id === recipe_id && rt.tag_id === tag.tag_id))
-        mockData.recipeTags.push({ recipe_id, tag_id: tag.tag_id });
-      return { success: true };
-    }
-    if (endpoint === '/remove-tag' && method === 'POST') {
-      const { recipe_id, tag_id } = JSON.parse(options.body);
-      mockData.recipeTags = mockData.recipeTags.filter(rt => !(rt.recipe_id === recipe_id && rt.tag_id === tag_id));
-      return { success: true };
-    }
-    if (endpoint.startsWith('/recipes'))     return mockData.recipes;
-    if (endpoint.startsWith('/favorites'))   return mockData.favorites.filter(f => f.user_id === userId).map(f => ({ ...f, recipe_name: (mockData.recipes.find(r => r.recipe_id === f.recipe_id) || {}).recipe_name }));
-    if (endpoint.startsWith('/nutrition'))   return mockData.nutrition;
-    if (endpoint.startsWith('/inventory'))   return mockData.inventory.filter(i => i.user_id === userId);
-    if (endpoint.startsWith('/grocery'))     return mockData.grocery.filter(g => g.user_id === userId);
-    if (endpoint.startsWith('/ingredients')) return mockData.ingredients;
-    return [];
   }
 
   /* ── Table rendering ──────────────────────────────────── */
@@ -1246,7 +1218,7 @@
   };
   function openRecipeDetail(recipe) {
     var tags = getTagsForRecipe(recipe.recipe_id);
-    var nut  = (USE_MOCK ? mockData.nutrition : liveNutrition).find(function(n) { return parseInt(n.recipe_id) === parseInt(recipe.recipe_id); });
+    var nut = liveNutrition.find(function(n) { return parseInt(n.recipe_id) === parseInt(recipe.recipe_id); });
     var fav  = isFavorited(recipe.recipe_id);
 
     detailTypePill.textContent     = recipe.type || 'Uncategorized';
@@ -1388,6 +1360,60 @@
   passwordInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') handleLogin(); });
   usernameInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') handleLogin(); });
   logoutBtn.addEventListener('click', showLoginPage);
+
+  /* ── Register toggle ──────────────────────────────────────── */
+  showRegisterBtn.addEventListener('click', function() {
+    loginFormEl.classList.add('hidden');
+    registerFormEl.classList.remove('hidden');
+    registerError.classList.add('hidden');
+    registerSuccess.classList.add('hidden');
+    regUsername.value = ''; regPassword.value = ''; regPasswordConfirm.value = '';
+  });
+  showLoginBtn.addEventListener('click', function() {
+    registerFormEl.classList.add('hidden');
+    loginFormEl.classList.remove('hidden');
+    loginError.classList.add('hidden');
+  });
+
+  async function handleRegister() {
+    registerError.classList.add('hidden');
+    registerSuccess.classList.add('hidden');
+
+    var username = sanitize(regUsername.value);
+    var password = regPassword.value;
+    var confirm  = regPasswordConfirm.value;
+
+    if (!username) { registerError.textContent = 'Please choose a username.'; registerError.classList.remove('hidden'); return; }
+    if (username.length < 3) { registerError.textContent = 'Username must be at least 3 characters.'; registerError.classList.remove('hidden'); return; }
+    if (!password) { registerError.textContent = 'Please choose a password.'; registerError.classList.remove('hidden'); return; }
+    if (password.length < 6) { registerError.textContent = 'Password must be at least 6 characters.'; registerError.classList.remove('hidden'); return; }
+    if (password !== confirm) { registerError.textContent = 'Passwords do not match.'; registerError.classList.remove('hidden'); return; }
+
+    registerBtn.disabled = true;
+    try {
+      var resp = await apiRequest('/register', { method: 'POST', body: JSON.stringify({ username: username, password: password }) });
+      if (resp.success) {
+        registerSuccess.textContent = '✨ Book created! You can now sign in.';
+        registerSuccess.classList.remove('hidden');
+        regPassword.value = ''; regPasswordConfirm.value = '';
+        // auto-fill login form and switch back after a beat
+        usernameInput.value = username;
+        passwordInput.value = '';
+        setTimeout(function() {
+          registerFormEl.classList.add('hidden');
+          loginFormEl.classList.remove('hidden');
+        }, 1800);
+      }
+    } catch (e) {
+      registerError.textContent = e.message || 'Could not create account.';
+      registerError.classList.remove('hidden');
+    } finally {
+      registerBtn.disabled = false;
+    }
+  }
+
+  registerBtn.addEventListener('click', function(e) { e.preventDefault(); handleRegister(); });
+  regPasswordConfirm.addEventListener('keypress', function(e) { if (e.key === 'Enter') handleRegister(); });
 
   /* ── Boot ─────────────────────────────────────────────── */
   showLoginPage();
