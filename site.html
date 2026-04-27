@@ -535,38 +535,6 @@
             <div id="invFormError" class="hidden handwriting" style="color:#c0627e;font-size:.82rem;margin-top:6px;"></div>
           </div>
 
-          <!-- inventory add form (shown only on inventory tab) -->
-          <div id="inventoryAddForm" class="hidden" style="margin-top:18px;background:#fff8f2;border-radius:18px;padding:16px 18px;border:2px solid #fce1d4;">
-            <div class="handwriting" style="font-size:1rem;font-weight:700;color:#7a3d5e;margin-bottom:12px;"><i class="fas fa-plus-circle" style="color:#c48ba2;margin-right:6px;"></i>Add to Inventory</div>
-            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:end;flex-wrap:wrap;">
-              <div>
-                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:4px;">Ingredient</div>
-                <input id="invIngredient" type="text" placeholder="e.g. Flour" class="handwriting"
-                  style="width:100%;padding:8px 12px;border:2px solid #eebfd2;border-radius:999px;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;outline:none;">
-              </div>
-              <div>
-                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:4px;">Quantity</div>
-                <input id="invQty" type="number" placeholder="500" min="0" step="any" class="handwriting"
-                  style="width:100%;padding:8px 12px;border:2px solid #eebfd2;border-radius:999px;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;outline:none;">
-              </div>
-              <div>
-                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:4px;">Unit</div>
-                <input id="invUnit" type="text" placeholder="grams" class="handwriting"
-                  style="width:100%;padding:8px 12px;border:2px solid #eebfd2;border-radius:999px;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;outline:none;">
-              </div>
-              <div>
-                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:4px;">Expiry (optional)</div>
-                <input id="invExpiry" type="date" class="handwriting"
-                  style="width:100%;padding:8px 12px;border:2px solid #eebfd2;border-radius:999px;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;outline:none;">
-              </div>
-              <button id="invAddBtn" class="handwriting"
-                style="padding:9px 18px;background:#d9a5bb;color:#fff;border:none;border-radius:999px;font-family:'Patrick Hand',cursive;font-size:.9rem;cursor:pointer;white-space:nowrap;transition:background .15s;">
-                <i class="fas fa-plus"></i> Add
-              </button>
-            </div>
-            <div id="invAddMsg" class="handwriting hidden" style="margin-top:8px;font-size:.85rem;color:#c48ba2;"></div>
-          </div>
-
           <!-- nutrition panel (hidden by default) -->
           <div id="nutritionPanel" class="hidden">
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px;">
@@ -954,6 +922,7 @@
         .catch(function() { showError('Could not mark as bought.'); });
       });
     });
+  }
 
   /* ── Inventory add form ───────────────────────────────────── */
   invAddBtn.addEventListener('click', function() {
@@ -969,11 +938,11 @@
 
     invAddBtn.disabled = true;
     apiRequest('/inventory-add', { method: 'POST', body: JSON.stringify({
-      user_id: currentUser.user_id,
-      ingredient_id,
-      quantity,
-      unit,
-      expiration_date
+      user_id:        currentUser.user_id,
+      ingredient_id:  ingredient_id,
+      quantity:       quantity,
+      unit:           unit,
+      expiration_date: expiration_date
     })})
     .then(function() {
       invQty.value = ''; invUnit.value = ''; invExpires.value = ''; invIngredientId.value = '';
