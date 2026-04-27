@@ -451,7 +451,7 @@
         <div class="flex items-center gap-3">
           <i class="fas fa-utensils" style="font-size:1.8rem;color:#c48ba2"></i>
           <h2 class="text-3xl handwriting font-semibold" style="color:#6e4d5f">
-            <span id="welcomeUser">liam</span>'s scrapbook
+            <span id="welcomeUser">liam</span>'s recipe book
           </h2>
         </div>
         <div class="flex gap-2 flex-wrap items-center">
@@ -507,9 +507,8 @@
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:8px;align-items:end;flex-wrap:wrap;">
               <div>
                 <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:3px;">Ingredient</div>
-                <select id="invIngredientId" class="handwriting" style="width:100%;padding:7px 10px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.88rem;color:#6e3a52;outline:none;">
-                  <option value="">select ingredient…</option>
-                </select>
+                <input id="invIngredientName" type="text" placeholder="e.g. Flour" maxlength="100"
+                  class="handwriting" style="width:100%;padding:7px 10px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.88rem;color:#6e3a52;outline:none;">
               </div>
               <div>
                 <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:3px;">Qty</div>
@@ -668,7 +667,7 @@
   const nutritionCount    = document.getElementById('nutritionCount');
   const tagSearchInput    = document.getElementById('tagSearchInput');
   const inventoryForm     = document.getElementById('inventoryForm');
-  const invIngredientId   = document.getElementById('invIngredientId');
+  const invIngredientName = document.getElementById('invIngredientName');
   const invQty            = document.getElementById('invQty');
   const invUnit           = document.getElementById('invUnit');
   const invExpires        = document.getElementById('invExpires');
@@ -861,8 +860,18 @@
       document.querySelectorAll('.fav-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
           e.stopPropagation();
-          apiRequest('/favorite', { method: 'POST', body: JSON.stringify({ recipe_id: parseInt(btn.dataset.recipeId) }) })
-            .then(function() { loadTabData('recipes'); })
+          var recipeId = parseInt(btn.dataset.recipeId);
+          apiRequest('/favorites', { method: 'POST', body: JSON.stringify({ recipe_id: recipeId, user_id: currentUser.user_id }) })
+            .then(function(res) {
+              // update liveFavorites in place without full reload
+              if (res.favorited) {
+                liveFavorites.push({ recipe_id: recipeId });
+              } else {
+                liveFavorites = liveFavorites.filter(function(f) { return parseInt(f.recipe_id) !== recipeId; });
+              }
+              btn.className = 'fav-btn' + (res.favorited ? ' favorited' : '');
+              btn.textContent = res.favorited ? '❤️' : '🤍';
+            })
             .catch(function() { showError('Could not toggle favorite.'); });
         });
       });
@@ -871,8 +880,28 @@
           e.stopPropagation();
           var tagName = prompt('Enter tag name:');
           if (tagName && tagName.trim()) {
-            apiRequest('/add-tag', { method: 'POST', body: JSON.stringify({ recipe_id: parseInt(btn.dataset.recipeId), tag_name: tagName.trim() }) })
-              .then(function() { loadTabData('recipes'); });
+            var safeTag = sanitize(tagName);
+            if (!safeTag) return;
+            var recipeId = parseInt(btn.dataset.recipeId);
+            apiRequest('/tags', { method: 'POST', body: JSON.stringify({ action: 'add', recipe_id: recipeId, tag_name: safeTag }) })
+              .then(function(res) {
+                // update live state
+                if (!liveRecipeTags.some(function(rt) { return parseInt(rt.recipe_id) === recipeId && parseInt(rt.tag_id) === res.tag_id; })) {
+                  liveRecipeTags.push({ recipe_id: recipeId, tag_id: res.tag_id });
+                }
+                if (!liveTags.some(function(t) { return parseInt(t.tag_id) === res.tag_id; })) {
+                  liveTags.push({ tag_id: res.tag_id, tag_name: safeTag, color: '#D5B8DA' });
+                }
+                // re-render just this row's tags cell
+                var row = tableBody.querySelector('tr[data-recipe-id="' + recipeId + '"]');
+                if (row) {
+                  var tags = getTagsForRecipe(recipeId);
+                  row.cells[4].innerHTML = tags.map(function(t) {
+                    return '<span class="tag-bookmark">' + t.tag_name +
+                      ' <i class="fas fa-times-circle tag-remove" data-recipe-id="' + recipeId + '" data-tag-id="' + t.tag_id + '"></i></span>';
+                  }).join('');
+                }
+              });
           }
         });
       });
@@ -880,8 +909,32 @@
         icon.addEventListener('click', function(e) {
           e.stopPropagation();
           if (confirm('Remove this tag?')) {
-            apiRequest('/remove-tag', { method: 'POST', body: JSON.stringify({ recipe_id: parseInt(icon.dataset.recipeId), tag_id: parseInt(icon.dataset.tagId) }) })
-              .then(function() { loadTabData('recipes'); });
+            var recipeId = parseInt(icon.dataset.recipeId);
+            var tagId    = parseInt(icon.dataset.tagId);
+            apiRequest('/tags', { method: 'POST', body: JSON.stringify({ action: 'remove', recipe_id: recipeId, tag_id: tagId }) })
+              .then(function() {
+                // remove from liveRecipeTags and re-render just this row's tags
+                liveRecipeTags = liveRecipeTags.filter(function(rt) {
+                  return !(parseInt(rt.recipe_id) === recipeId && parseInt(rt.tag_id) === tagId);
+                });
+                // find the row and update its tags cell
+                var row = tableBody.querySelector('tr[data-recipe-id="' + recipeId + '"]');
+                if (row) {
+                  var tags = getTagsForRecipe(recipeId);
+                  var tagCell = row.cells[4];
+                  tagCell.innerHTML = tags.length ? tags.map(function(t) {
+                    return '<span class="tag-bookmark">' + t.tag_name +
+                      ' <i class="fas fa-times-circle tag-remove" data-recipe-id="' + recipeId + '" data-tag-id="' + t.tag_id + '"></i></span>';
+                  }).join('') : '—';
+                  // rewire the new remove buttons
+                  tagCell.querySelectorAll('.tag-remove').forEach(function(newIcon) {
+                    newIcon.addEventListener('click', function(e2) {
+                      e2.stopPropagation();
+                      newIcon.closest('i') && newIcon.dispatchEvent(new Event('click'));
+                    });
+                  });
+                }
+              });
           }
         });
       });
@@ -924,28 +977,43 @@
     });
   }
 
+  /* ── Sanitization ─────────────────────────────────────────── */
+  // Strips HTML tags and trims whitespace — prevents XSS in text rendered to DOM.
+  // SQLi is handled server-side via PDO prepared statements; this is a defence-in-depth layer.
+  function sanitize(str) {
+    return String(str)
+      .replace(/[<>"'`]/g, '')   // strip chars that enable XSS
+      .replace(/[;\\]/g, '')     // strip SQLi punctuation
+      .trim()
+      .substring(0, 200);        // hard length cap
+  }
+  function sanitizeNum(val) {
+    var n = parseFloat(val);
+    return isNaN(n) || n < 0 ? 0 : n;
+  }
+
   /* ── Inventory add form ───────────────────────────────────── */
   invAddBtn.addEventListener('click', function() {
     invFormError.classList.add('hidden');
-    var ingredient_id = parseInt(invIngredientId.value);
-    var quantity      = parseFloat(invQty.value);
-    var unit          = invUnit.value.trim();
+    var ingredient_name = sanitize(invIngredientName.value);
+    var quantity        = sanitizeNum(invQty.value);
+    var unit            = sanitize(invUnit.value);
     var expiration_date = invExpires.value || null;
 
-    if (!ingredient_id) { invFormError.textContent = 'Please select an ingredient.'; invFormError.classList.remove('hidden'); return; }
+    if (!ingredient_name) { invFormError.textContent = 'Enter an ingredient name.'; invFormError.classList.remove('hidden'); return; }
     if (!quantity || quantity <= 0) { invFormError.textContent = 'Enter a valid quantity.'; invFormError.classList.remove('hidden'); return; }
-    if (!unit) { invFormError.textContent = 'Enter a unit.'; invFormError.classList.remove('hidden'); return; }
+    if (!unit) { invFormError.textContent = 'Enter a unit (e.g. grams, count).'; invFormError.classList.remove('hidden'); return; }
 
     invAddBtn.disabled = true;
     apiRequest('/inventory-add', { method: 'POST', body: JSON.stringify({
-      user_id:        currentUser.user_id,
-      ingredient_id:  ingredient_id,
-      quantity:       quantity,
-      unit:           unit,
+      user_id:         currentUser.user_id,
+      ingredient_name: ingredient_name,
+      quantity:        quantity,
+      unit:            unit,
       expiration_date: expiration_date
     })})
     .then(function() {
-      invQty.value = ''; invUnit.value = ''; invExpires.value = ''; invIngredientId.value = '';
+      invIngredientName.value = ''; invQty.value = ''; invUnit.value = ''; invExpires.value = '';
       loadTabData('inventory');
     })
     .catch(function() { invFormError.textContent = 'Could not add item.'; invFormError.classList.remove('hidden'); })
@@ -1044,20 +1112,18 @@
           data = await apiRequest('/recipes?user_id=' + userId);
           liveRecipes = data;
           // also refresh favorites and tags so hearts and tag display are accurate
-          var [favsData, tagsData, recipeTagsData] = await Promise.all([
+          var [favsData, tagsData] = await Promise.all([
             apiRequest('/favorites?user_id=' + userId),
-            apiRequest('/tags'),
-            apiRequest('/tags?all_recipe_tags=1')
+            apiRequest('/tags')
           ]);
           liveFavorites  = favsData;
           liveTags       = tagsData;
-          // fetch per-recipe tags by pulling tags for each recipe
+          // build liveRecipeTags from each recipe's tags in one pass
           liveRecipeTags = [];
           await Promise.all(data.map(async function(r) {
             var rt = await apiRequest('/tags?recipe_id=' + r.recipe_id);
             rt.forEach(function(t) {
               liveRecipeTags.push({ recipe_id: r.recipe_id, tag_id: t.tag_id });
-              if (!liveTags.find(function(lt) { return lt.tag_id === t.tag_id; })) liveTags.push(t);
             });
           }));
           mapper = function(r) {
@@ -1087,21 +1153,6 @@
         case 'inventory':
           columns = ['Ingredient', 'Qty', 'Unit', 'Expiration', 'Opened', ''];
           data = await apiRequest('/inventory?user_id=' + userId);
-          // populate ingredient dropdown
-          var allIngredients = await apiRequest('/ingredients');
-          invIngredientId.innerHTML = '<option value="">select ingredient…</option>';
-          allIngredients.forEach(function(ing) {
-            var opt = document.createElement('option');
-            opt.value = ing.ingredient_id;
-            opt.textContent = ing.ingredient_name;
-            if (ing.default_unit && !invUnit.value) invUnit.placeholder = ing.default_unit;
-            invIngredientId.appendChild(opt);
-          });
-          // auto-fill unit when ingredient changes
-          invIngredientId.onchange = function() {
-            var ing = allIngredients.find(function(i) { return i.ingredient_id == invIngredientId.value; });
-            if (ing && ing.default_unit) invUnit.value = ing.default_unit;
-          };
           mapper = function(i) { return [
             i.ingredient_name,
             i.quantity,
