@@ -483,7 +483,6 @@
           <div class="pull-bookmark" data-tab="nutrition"><span class="bm-icon"><i class="fas fa-leaf"></i></span><span class="bm-label">Nutrition</span></div>
           <div class="pull-bookmark" data-tab="inventory"><span class="bm-icon"><i class="fas fa-box"></i></span><span class="bm-label">Inventory</span></div>
           <div class="pull-bookmark" data-tab="grocery"><span class="bm-icon"><i class="fas fa-shopping-cart"></i></span><span class="bm-label">Grocery</span></div>
-          <div class="pull-bookmark" data-tab="ingredients"><span class="bm-icon"><i class="fas fa-carrot"></i></span><span class="bm-label">Ingredients</span></div>
         </div>
 
         <!-- Page -->
@@ -500,6 +499,72 @@
               <thead><tr id="tableHeaderRow"></tr></thead>
               <tbody id="tableBody"></tbody>
             </table>
+          </div>
+
+          <!-- inventory add form -->
+          <div id="inventoryForm" class="hidden" style="margin-top:16px;background:#fff8f2;border-radius:18px;padding:16px;border:1px solid #fce1d4;">
+            <div class="handwriting" style="font-size:1rem;color:#7a3d5e;font-weight:700;margin-bottom:10px;"><i class="fas fa-plus-circle" style="color:#c48ba2;margin-right:6px;"></i>Add to Inventory</div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:8px;align-items:end;flex-wrap:wrap;">
+              <div>
+                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:3px;">Ingredient</div>
+                <select id="invIngredientId" class="handwriting" style="width:100%;padding:7px 10px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.88rem;color:#6e3a52;outline:none;">
+                  <option value="">select ingredient…</option>
+                </select>
+              </div>
+              <div>
+                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:3px;">Qty</div>
+                <input id="invQty" type="number" min="0" step="0.01" placeholder="0"
+                  class="handwriting" style="width:100%;padding:7px 10px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.88rem;color:#6e3a52;outline:none;">
+              </div>
+              <div>
+                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:3px;">Unit</div>
+                <input id="invUnit" type="text" placeholder="grams"
+                  class="handwriting" style="width:100%;padding:7px 10px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.88rem;color:#6e3a52;outline:none;">
+              </div>
+              <div>
+                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:3px;">Expires</div>
+                <input id="invExpires" type="date"
+                  class="handwriting" style="width:100%;padding:7px 10px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.88rem;color:#6e3a52;outline:none;">
+              </div>
+              <div>
+                <button id="invAddBtn" class="handwriting" style="width:100%;padding:8px 0;background:#d9a5bb;color:#fff;border:none;border-radius:999px;font-size:.9rem;cursor:pointer;font-family:'Patrick Hand',cursive;">
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+            <div id="invFormError" class="hidden handwriting" style="color:#c0627e;font-size:.82rem;margin-top:6px;"></div>
+          </div>
+
+          <!-- inventory add form (shown only on inventory tab) -->
+          <div id="inventoryAddForm" class="hidden" style="margin-top:18px;background:#fff8f2;border-radius:18px;padding:16px 18px;border:2px solid #fce1d4;">
+            <div class="handwriting" style="font-size:1rem;font-weight:700;color:#7a3d5e;margin-bottom:12px;"><i class="fas fa-plus-circle" style="color:#c48ba2;margin-right:6px;"></i>Add to Inventory</div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:end;flex-wrap:wrap;">
+              <div>
+                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:4px;">Ingredient</div>
+                <input id="invIngredient" type="text" placeholder="e.g. Flour" class="handwriting"
+                  style="width:100%;padding:8px 12px;border:2px solid #eebfd2;border-radius:999px;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;outline:none;">
+              </div>
+              <div>
+                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:4px;">Quantity</div>
+                <input id="invQty" type="number" placeholder="500" min="0" step="any" class="handwriting"
+                  style="width:100%;padding:8px 12px;border:2px solid #eebfd2;border-radius:999px;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;outline:none;">
+              </div>
+              <div>
+                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:4px;">Unit</div>
+                <input id="invUnit" type="text" placeholder="grams" class="handwriting"
+                  style="width:100%;padding:8px 12px;border:2px solid #eebfd2;border-radius:999px;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;outline:none;">
+              </div>
+              <div>
+                <div class="handwriting" style="font-size:.75rem;color:#b09aaa;margin-bottom:4px;">Expiry (optional)</div>
+                <input id="invExpiry" type="date" class="handwriting"
+                  style="width:100%;padding:8px 12px;border:2px solid #eebfd2;border-radius:999px;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;outline:none;">
+              </div>
+              <button id="invAddBtn" class="handwriting"
+                style="padding:9px 18px;background:#d9a5bb;color:#fff;border:none;border-radius:999px;font-family:'Patrick Hand',cursive;font-size:.9rem;cursor:pointer;white-space:nowrap;transition:background .15s;">
+                <i class="fas fa-plus"></i> Add
+              </button>
+            </div>
+            <div id="invAddMsg" class="handwriting hidden" style="margin-top:8px;font-size:.85rem;color:#c48ba2;"></div>
           </div>
 
           <!-- nutrition panel (hidden by default) -->
@@ -602,6 +667,11 @@
   let currentUser = null;
   let currentTab  = 'recipes';
   let selectedType = '';
+  let liveRecipes   = [];
+  let liveFavorites = [];
+  let liveNutrition = [];
+  let liveTags      = [];
+  let liveRecipeTags = [];
 
   /* ── DOM refs ─────────────────────────────────────────── */
   const loginPage         = document.getElementById('loginPage');
@@ -629,6 +699,13 @@
   const nutritionTypeFilter = document.getElementById('nutritionTypeFilter');
   const nutritionCount    = document.getElementById('nutritionCount');
   const tagSearchInput    = document.getElementById('tagSearchInput');
+  const inventoryForm     = document.getElementById('inventoryForm');
+  const invIngredientId   = document.getElementById('invIngredientId');
+  const invQty            = document.getElementById('invQty');
+  const invUnit           = document.getElementById('invUnit');
+  const invExpires        = document.getElementById('invExpires');
+  const invAddBtn         = document.getElementById('invAddBtn');
+  const invFormError      = document.getElementById('invFormError');
   const recipeDetailModal  = document.getElementById('recipeDetailModal');
   const detailCloseBtn     = document.getElementById('detailCloseBtn');
   const detailTypePill     = document.getElementById('detailTypePill');
@@ -686,16 +763,22 @@
 
   /* ── Helpers ──────────────────────────────────────────── */
   function getTagsForRecipe(recipeId) {
-    const ids = mockData.recipeTags.filter(rt => rt.recipe_id === recipeId).map(rt => rt.tag_id);
-    return mockData.tags.filter(t => ids.includes(t.tag_id));
+    if (USE_MOCK) {
+      var ids = mockData.recipeTags.filter(function(rt) { return rt.recipe_id === recipeId; }).map(function(rt) { return rt.tag_id; });
+      return mockData.tags.filter(function(t) { return ids.includes(t.tag_id); });
+    }
+    var ids = liveRecipeTags.filter(function(rt) { return parseInt(rt.recipe_id) === recipeId; }).map(function(rt) { return parseInt(rt.tag_id); });
+    return liveTags.filter(function(t) { return ids.includes(parseInt(t.tag_id)); });
   }
   function isFavorited(recipeId) {
-    return currentUser && mockData.favorites.some(f => f.recipe_id === recipeId && f.user_id === currentUser.user_id);
+    if (USE_MOCK) return currentUser && mockData.favorites.some(function(f) { return f.recipe_id === recipeId && f.user_id === currentUser.user_id; });
+    return currentUser && liveFavorites.some(function(f) { return parseInt(f.recipe_id) === recipeId; });
   }
   function showLoading(s) {
     loadingIndicator.classList.toggle('hidden', !s);
     tableWrap.classList.toggle('hidden', s || currentTab === 'nutrition');
     nutritionPanel.classList.toggle('hidden', s || currentTab !== 'nutrition');
+    inventoryForm.classList.toggle('hidden', currentTab !== 'inventory');
   }
   function showError(m) { errorMessageDiv.textContent = m; errorMessageDiv.classList.remove('hidden'); }
   function hideError()  { errorMessageDiv.classList.add('hidden'); }
@@ -841,12 +924,64 @@
           // don't open modal if user clicked a button or icon inside the row
           if (e.target.closest('button, i')) return;
           var id = parseInt(row.dataset.recipeId);
-          var recipe = mockData.recipes.find(function(r) { return r.recipe_id === id; });
+          var recipe = liveRecipes.find(function(r) { return parseInt(r.recipe_id) === id; });
           if (recipe) openRecipeDetail(recipe);
         });
       });
     }
-  }
+
+    // inventory remove button
+    document.querySelectorAll('.del-inv-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (!confirm('Remove this item from inventory?')) return;
+        apiRequest('/inventory-delete', { method: 'POST', body: JSON.stringify({ inventory_id: parseInt(btn.dataset.invId) }) })
+          .then(function() { loadTabData('inventory'); })
+          .catch(function() { showError('Could not remove item.'); });
+      });
+    });
+
+    // grocery mark as bought → remove from grocery, add to inventory
+    document.querySelectorAll('.mark-bought-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        apiRequest('/grocery-bought', { method: 'POST', body: JSON.stringify({
+          list_id:       parseInt(btn.dataset.listId),
+          ingredient_id: parseInt(btn.dataset.ingredientId),
+          quantity:      parseFloat(btn.dataset.qty),
+          unit:          btn.dataset.unit,
+          user_id:       currentUser.user_id
+        })})
+        .then(function() { loadTabData('grocery'); })
+        .catch(function() { showError('Could not mark as bought.'); });
+      });
+    });
+
+  /* ── Inventory add form ───────────────────────────────────── */
+  invAddBtn.addEventListener('click', function() {
+    invFormError.classList.add('hidden');
+    var ingredient_id = parseInt(invIngredientId.value);
+    var quantity      = parseFloat(invQty.value);
+    var unit          = invUnit.value.trim();
+    var expiration_date = invExpires.value || null;
+
+    if (!ingredient_id) { invFormError.textContent = 'Please select an ingredient.'; invFormError.classList.remove('hidden'); return; }
+    if (!quantity || quantity <= 0) { invFormError.textContent = 'Enter a valid quantity.'; invFormError.classList.remove('hidden'); return; }
+    if (!unit) { invFormError.textContent = 'Enter a unit.'; invFormError.classList.remove('hidden'); return; }
+
+    invAddBtn.disabled = true;
+    apiRequest('/inventory-add', { method: 'POST', body: JSON.stringify({
+      user_id: currentUser.user_id,
+      ingredient_id,
+      quantity,
+      unit,
+      expiration_date
+    })})
+    .then(function() {
+      invQty.value = ''; invUnit.value = ''; invExpires.value = ''; invIngredientId.value = '';
+      loadTabData('inventory');
+    })
+    .catch(function() { invFormError.textContent = 'Could not add item.'; invFormError.classList.remove('hidden'); })
+    .finally(function() { invAddBtn.disabled = false; });
+  });
 
   /* ── Nutrition panel ──────────────────────────────────── */
   function renderNutrition(data) {
@@ -927,6 +1062,7 @@
 
       if (tabId === 'nutrition') {
         var ndata = await apiRequest('/nutrition?user_id=' + userId);
+        liveNutrition = ndata;
         showLoading(false);
         renderNutrition(ndata);
         return;
@@ -937,6 +1073,24 @@
         case 'recipes':
           columns = ['Name', 'Type', 'Instructions', 'Source', 'Tags', '❤️', '+Tag'];
           data = await apiRequest('/recipes?user_id=' + userId);
+          liveRecipes = data;
+          // also refresh favorites and tags so hearts and tag display are accurate
+          var [favsData, tagsData, recipeTagsData] = await Promise.all([
+            apiRequest('/favorites?user_id=' + userId),
+            apiRequest('/tags'),
+            apiRequest('/tags?all_recipe_tags=1')
+          ]);
+          liveFavorites  = favsData;
+          liveTags       = tagsData;
+          // fetch per-recipe tags by pulling tags for each recipe
+          liveRecipeTags = [];
+          await Promise.all(data.map(async function(r) {
+            var rt = await apiRequest('/tags?recipe_id=' + r.recipe_id);
+            rt.forEach(function(t) {
+              liveRecipeTags.push({ recipe_id: r.recipe_id, tag_id: t.tag_id });
+              if (!liveTags.find(function(lt) { return lt.tag_id === t.tag_id; })) liveTags.push(t);
+            });
+          }));
           mapper = function(r) {
             var tags = getTagsForRecipe(r.recipe_id);
             var tagHtml = tags.map(function(t) {
@@ -958,22 +1112,47 @@
         case 'favorites':
           columns = ['Recipe', 'Rating', 'Notes'];
           data = await apiRequest('/favorites?user_id=' + userId);
+          liveFavorites = data;
           mapper = function(f) { return [f.recipe_name, (f.rating || 0) + '★', f.notes || '']; };
           break;
         case 'inventory':
-          columns = ['Ingredient', 'Qty', 'Unit', 'Expiration'];
+          columns = ['Ingredient', 'Qty', 'Unit', 'Expiration', 'Opened', ''];
           data = await apiRequest('/inventory?user_id=' + userId);
-          mapper = function(i) { return [i.ingredient_name, i.quantity, i.unit, i.expiration_date || '—']; };
+          // populate ingredient dropdown
+          var allIngredients = await apiRequest('/ingredients');
+          invIngredientId.innerHTML = '<option value="">select ingredient…</option>';
+          allIngredients.forEach(function(ing) {
+            var opt = document.createElement('option');
+            opt.value = ing.ingredient_id;
+            opt.textContent = ing.ingredient_name;
+            if (ing.default_unit && !invUnit.value) invUnit.placeholder = ing.default_unit;
+            invIngredientId.appendChild(opt);
+          });
+          // auto-fill unit when ingredient changes
+          invIngredientId.onchange = function() {
+            var ing = allIngredients.find(function(i) { return i.ingredient_id == invIngredientId.value; });
+            if (ing && ing.default_unit) invUnit.value = ing.default_unit;
+          };
+          mapper = function(i) { return [
+            i.ingredient_name,
+            i.quantity,
+            i.unit,
+            i.expiration_date || '—',
+            i.date_opened    || '—',
+            '<button class="del-inv-btn handwriting" data-inv-id="' + i.inventory_id + '" style="font-size:.75rem;background:#fce4ef;border:none;padding:4px 10px;border-radius:999px;cursor:pointer;color:#b05878;">🗑 remove</button>'
+          ]; };
           break;
         case 'grocery':
           columns = ['Ingredient', 'Qty', 'Unit', 'Purchased'];
           data = await apiRequest('/grocery?user_id=' + userId);
-          mapper = function(g) { return [g.ingredient_name, g.quantity, g.unit, g.is_purchased ? '✅' : '⬜']; };
-          break;
-        case 'ingredients':
-          columns = ['Ingredient', 'Default Unit'];
-          data = await apiRequest('/ingredients');
-          mapper = function(i) { return [i.ingredient_name, i.default_unit]; };
+          mapper = function(g) { return [
+            g.ingredient_name,
+            g.quantity,
+            g.unit,
+            g.is_purchased
+              ? '✅'
+              : '<button class="mark-bought-btn handwriting" data-list-id="' + g.list_id + '" data-ingredient-id="' + g.ingredient_id + '" data-qty="' + g.quantity + '" data-unit="' + g.unit + '" style="font-size:.75rem;background:#d4e8f5;border:none;padding:4px 12px;border-radius:999px;cursor:pointer;color:#476075;">✔ mark bought</button>'
+          ]; };
           break;
       }
 
@@ -1047,7 +1226,7 @@
   };
   function openRecipeDetail(recipe) {
     var tags = getTagsForRecipe(recipe.recipe_id);
-    var nut  = mockData.nutrition.find(function(n) { return n.recipe_id === recipe.recipe_id; });
+    var nut  = (USE_MOCK ? mockData.nutrition : liveNutrition).find(function(n) { return parseInt(n.recipe_id) === parseInt(recipe.recipe_id); });
     var fav  = isFavorited(recipe.recipe_id);
 
     detailTypePill.textContent     = recipe.type || 'Uncategorized';
