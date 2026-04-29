@@ -6,7 +6,7 @@ $db      = 'liammcke_inventory_recipes';
 $port    = '3306';
 $charset = 'utf8mb4';
 
-$username = 'liammcke_user';      // replace with your cPanel DB username
+$username = 'liammckenzie';      // replace with your cPanel DB username
 $password = 'oZc_b3vPZCfDeJubTnU';   // replace with your cPanel DB password
 
 $options = [
