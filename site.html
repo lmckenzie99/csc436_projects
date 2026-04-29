@@ -361,9 +361,9 @@
     /* ── Nyan Cat ────────────────────────────────────── */
     .nyan-cat-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden; }
     .nyan-cat {
-      position: absolute; top: 30%; left: -200px; width: 180px; height: 100px;
+      position: absolute; top: 30%; left: -600px;
+      height: 80px;
       animation: flyAcross 3.5s ease-in-out forwards;
-      display: flex; align-items: center;
     }
     .cat-body { filter: drop-shadow(0 8px 6px rgba(0,0,0,.1)); }
     .rainbow-trail { display: flex; margin-left: -10px; }
@@ -666,12 +666,7 @@
 <!-- ═══════════════════ NYAN CAT ═══════════════════ -->
 <div id="nyanCatOverlay" class="nyan-cat-overlay hidden">
   <div class="nyan-cat">
-    <img src="nyan.png" class="cat-body" alt="nyan cat" style="height:80px;width:auto;">
-    <div class="rainbow-trail">
-      <span style="background:#FFB3BA"></span><span style="background:#FFDFBA"></span>
-      <span style="background:#FFFFBA"></span><span style="background:#BAFFC9"></span>
-      <span style="background:#BAE1FF"></span><span style="background:#D4B8D4"></span>
-    </div>
+    <img src="nyan.png" class="cat-body" alt="nyan cat" style="height:80px;width:auto;mix-blend-mode:multiply;">
   </div>
 </div>
 
