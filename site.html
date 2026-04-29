@@ -365,7 +365,7 @@
       animation: flyAcross 3.5s ease-in-out forwards;
       display: flex; align-items: center;
     }
-    .cat-body { font-size: 60px; filter: drop-shadow(0 8px 6px rgba(0,0,0,.1)); }
+    .cat-body { filter: drop-shadow(0 8px 6px rgba(0,0,0,.1)); }
     .rainbow-trail { display: flex; margin-left: -10px; }
     .rainbow-trail span { display: block; width: 20px; height: 40px; margin-right: 4px; border-radius: 10px; opacity: .8; }
     @keyframes flyAcross {
@@ -629,6 +629,11 @@
     <button class="modal-confirm" id="modalConfirmBtn">
       <i class="fas fa-cloud-download-alt"></i> Fetch this type
     </button>
+    <div style="margin-top:16px;display:flex;align-items:center;justify-content:center;gap:0;background:#f9eef5;border-radius:999px;padding:4px;border:2px solid #eebfd2;">
+      <button class="src-btn active" data-src="spoonacular" style="padding:7px 16px;border-radius:999px;border:none;font-family:'Patrick Hand',cursive;font-size:.85rem;cursor:pointer;transition:background .15s,color .15s;background:#d9a5bb;color:#fff;">🥄 Spoonacular</button>
+      <button class="src-btn" data-src="edamam" style="padding:7px 16px;border-radius:999px;border:none;font-family:'Patrick Hand',cursive;font-size:.85rem;cursor:pointer;transition:background .15s,color .15s;background:transparent;color:#9a6070;">🥗 Edamam</button>
+      <button class="src-btn" data-src="both" style="padding:7px 16px;border-radius:999px;border:none;font-family:'Patrick Hand',cursive;font-size:.85rem;cursor:pointer;transition:background .15s,color .15s;background:transparent;color:#9a6070;">✨ Both</button>
+    </div>
   </div>
 </div>
 
@@ -661,7 +666,7 @@
 <!-- ═══════════════════ NYAN CAT ═══════════════════ -->
 <div id="nyanCatOverlay" class="nyan-cat-overlay hidden">
   <div class="nyan-cat">
-    <span class="cat-body">🐱</span>
+    <img src="nyan.png" class="cat-body" alt="nyan cat" style="height:80px;width:auto;">
     <div class="rainbow-trail">
       <span style="background:#FFB3BA"></span><span style="background:#FFDFBA"></span>
       <span style="background:#FFFFBA"></span><span style="background:#BAFFC9"></span>
@@ -1006,7 +1011,7 @@
     function draw(rows) {
       // headers
       nutritionHeaderRow.innerHTML = '';
-      var cols = ['Recipe', 'Type', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fat (g)', 'Fiber (g)', 'Sodium (mg)'];
+      var cols = ['Recipe', 'Type', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fat (g)'];
       cols.forEach(function(c) {
         var th = document.createElement('th'); th.textContent = c;
         nutritionHeaderRow.appendChild(th);
@@ -1036,9 +1041,7 @@
           row.calories + ' ' + barHtml,
           row.protein_g,
           row.carbs_g,
-          row.fat_g,
-          row.fiber_g,
-          row.sodium_mg
+          row.fat_g
         ];
         cells.forEach(function(val) {
           var td = document.createElement('td'); td.innerHTML = val; tr.appendChild(td);
@@ -1248,9 +1251,7 @@
         { val: nut.calories,          lbl: 'Calories' },
         { val: nut.protein_g  + 'g',  lbl: 'Protein'  },
         { val: nut.carbs_g    + 'g',  lbl: 'Carbs'    },
-        { val: nut.fat_g      + 'g',  lbl: 'Fat'      },
-        { val: nut.fiber_g    + 'g',  lbl: 'Fiber'    },
-        { val: nut.sodium_mg  + 'mg', lbl: 'Sodium'   }
+        { val: nut.fat_g      + 'g',  lbl: 'Fat'      }
       ].map(function(n) {
         return '<div class="detail-nut-card"><div class="val">' + n.val + '</div><div class="lbl">' + n.lbl + '</div></div>';
       }).join('');
@@ -1302,6 +1303,19 @@
     });
   });
 
+  // source toggle switch
+  var selectedSource = 'spoonacular';
+  document.querySelectorAll('.src-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectedSource = btn.dataset.src;
+      document.querySelectorAll('.src-btn').forEach(function(b) {
+        var active = b.dataset.src === selectedSource;
+        b.style.background = active ? '#d9a5bb' : 'transparent';
+        b.style.color       = active ? '#fff'    : '#9a6070';
+      });
+    });
+  });
+
   recipeTypeModal.addEventListener('click', function(e) {
     if (e.target === recipeTypeModal) closeTypeModal();
   });
@@ -1311,8 +1325,8 @@
     closeTypeModal();
     showLoading(true);
     try {
-      var res = await apiRequest('/fetch-external-recipes', { method: 'POST', body: JSON.stringify({ type: selectedType }) });
-      alert('Added ' + res.added + ' new ' + res.type + ' recipe!');
+      var res = await apiRequest('/fetch-external-recipes', { method: 'POST', body: JSON.stringify({ type: selectedType, user_id: currentUser.user_id, source: selectedSource }) });
+      alert('Added ' + res.added + ' new ' + res.type + ' recipe' + (res.added !== 1 ? 's' : '') + '!' + (res.errors && res.errors.length ? ' (' + res.errors.join(', ') + ')' : ''));
       if (currentTab === 'recipes') loadTabData('recipes');
     } catch (e) {
       alert('Fetch simulated.');
