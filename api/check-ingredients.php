@@ -8,7 +8,6 @@ $recipe_id = sanitize_int($_GET['recipe_id'] ?? 0);
 $user_id   = sanitize_int($_GET['user_id']   ?? 0);
 if (!$recipe_id || !$user_id) json_err('recipe_id and user_id required');
 
-// Get all ingredients needed for this recipe
 $needed = pdo($pdo, '
     SELECT ri.ingredient_id, ri.quantity AS needed_qty, ri.unit,
            i.ingredient_name
@@ -18,30 +17,60 @@ $needed = pdo($pdo, '
 ', [$recipe_id])->fetchAll();
 
 if (empty($needed)) {
-    json_out(['has_all' => true, 'ingredients' => [], 'missing' => []]);
+    json_out(['has_all' => true, 'have' => [], 'missing' => []]);
 }
 
-// Check inventory for each ingredient
+$inventory = pdo($pdo, '
+    SELECT inv.ingredient_id, inv.quantity, inv.unit, i.ingredient_name
+    FROM Inventory inv
+    JOIN Ingredients i ON i.ingredient_id = inv.ingredient_id
+    WHERE inv.user_id = ?
+', [$user_id])->fetchAll();
+
+// Strip common plural suffixes for fuzzy matching
+function stem($name) {
+    $name = strtolower(trim($name));
+    $name = preg_replace('/(oes|ies|ves|es|s)$/', '', $name);
+    return $name;
+}
+
+// Build stem -> total qty from inventory
+$inv_by_stem = [];
+foreach ($inventory as $row) {
+    $key = stem($row['ingredient_name']);
+    $inv_by_stem[$key] = ($inv_by_stem[$key] ?? 0) + (float)$row['quantity'];
+}
+
+// Also build exact id -> qty for direct matches
+$inv_by_id = [];
+foreach ($inventory as $row) {
+    $id = (int)$row['ingredient_id'];
+    $inv_by_id[$id] = ($inv_by_id[$id] ?? 0) + (float)$row['quantity'];
+}
+
 $have    = [];
 $missing = [];
 
 foreach ($needed as $ing) {
-    $inv = pdo($pdo, '
-        SELECT SUM(quantity) AS total_qty
-        FROM Inventory
-        WHERE ingredient_id = ? AND user_id = ?
-    ', [$ing['ingredient_id'], $user_id])->fetch();
+    $needed_qty = (float)$ing['needed_qty'];
+    $ing_id     = (int)$ing['ingredient_id'];
 
-    $total = (float)($inv['total_qty'] ?? 0);
+    // Prefer exact ID match, fall back to stemmed name match
+    if (isset($inv_by_id[$ing_id])) {
+        $have_qty = $inv_by_id[$ing_id];
+    } else {
+        $have_qty = $inv_by_stem[stem($ing['ingredient_name'])] ?? 0;
+    }
+
     $entry = [
-        'ingredient_id'   => $ing['ingredient_id'],
+        'ingredient_id'   => $ing_id,
         'ingredient_name' => $ing['ingredient_name'],
-        'needed_qty'      => $ing['needed_qty'],
-        'have_qty'        => $total,
+        'needed_qty'      => $needed_qty,
+        'have_qty'        => $have_qty,
         'unit'            => $ing['unit']
     ];
 
-    if ($total >= $ing['needed_qty']) {
+    if ($have_qty >= $needed_qty) {
         $have[] = $entry;
     } else {
         $missing[] = $entry;
@@ -49,7 +78,7 @@ foreach ($needed as $ing) {
 }
 
 json_out([
-    'has_all'  => empty($missing),
-    'have'     => $have,
-    'missing'  => $missing
+    'has_all' => empty($missing),
+    'have'    => $have,
+    'missing' => $missing
 ]);
