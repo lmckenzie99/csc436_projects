@@ -262,6 +262,35 @@
       box-shadow: 0 35px 45px -15px #c29bb3, inset 0 0 0 3px #fff3fc;
     }
 
+    /* ── Flip card ───────────────────────────────────────── */
+    .flip-card-wrap {
+      perspective: 1000px;
+      cursor: pointer;
+      margin-bottom: 4px;
+    }
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      transition: transform .5s cubic-bezier(.4,0,.2,1);
+      transform-style: preserve-3d;
+    }
+    .flip-card-wrap.flipped .flip-card-inner { transform: rotateY(180deg); }
+    .flip-card-front, .flip-card-back {
+      width: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 14px;
+    }
+    .flip-card-back {
+      position: absolute; top: 0; left: 0;
+      transform: rotateY(180deg);
+    }
+    .flip-hint {
+      font-size: .72rem; color: #c48ba2;
+      font-family: 'Patrick Hand', cursive;
+      text-align: right; margin-top: 4px;
+    }
+
     /* ── Recipe detail modal ─────────────────────────── */
     .detail-modal-box {
       background: #fffdf8;
@@ -657,8 +686,38 @@
     <div id="detailTitle" class="detail-title"></div>
     <div id="detailSource" class="detail-source"></div>
 
-    <div class="detail-section-label"><i class="fas fa-scroll"></i> Instructions</div>
-    <div id="detailInstructions" class="detail-instructions"></div>
+    <div id="detailFlipLabel" class="detail-section-label"><i class="fas fa-scroll"></i> Instructions</div>
+    <div class="flip-card-wrap" id="detailFlipCard">
+      <div class="flip-card-inner">
+        <div class="flip-card-front detail-instructions" id="detailInstructions"></div>
+        <div class="flip-card-back detail-instructions" id="detailIngrFlipBack" style="background:#f0f9ec;border-color:#d4edbd;min-height:80px;"></div>
+      </div>
+    </div>
+    <div class="flip-hint">👆 tap to flip between instructions &amp; ingredients</div>
+
+    <div class="detail-section-label" style="display:flex;align-items:center;justify-content:space-between;">
+      <span><i class="fas fa-carrot"></i> Ingredients</span>
+      <button id="detailEditIngrBtn" class="handwriting" style="font-size:.75rem;background:#f3e8ff;border:none;padding:4px 12px;border-radius:999px;cursor:pointer;color:#5e3a7e;"><i class="fas fa-pen"></i> edit</button>
+    </div>
+    <div id="detailIngrList" style="margin-bottom:6px;min-height:20px;"></div>
+
+    <!-- edit ingredients panel (hidden by default) -->
+    <div id="detailIngrEdit" class="hidden" style="background:#fff8f2;border-radius:14px;padding:12px;border:1px solid #fce1d4;margin-bottom:8px;">
+      <div id="detailIngrEditRows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+      <!-- add new ingredient row -->
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:6px;align-items:center;">
+        <input id="ingrEditName" type="text" placeholder="Ingredient" maxlength="100" class="handwriting"
+          style="padding:6px 10px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.85rem;color:#6e3a52;outline:none;">
+        <input id="ingrEditQty" type="number" min="0" step="0.01" placeholder="Qty" class="handwriting"
+          style="padding:6px 10px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.85rem;color:#6e3a52;outline:none;">
+        <input id="ingrEditUnit" type="text" placeholder="Unit" maxlength="50" class="handwriting"
+          style="padding:6px 10px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.85rem;color:#6e3a52;outline:none;">
+        <button id="ingrEditAddBtn" class="handwriting" style="padding:6px 12px;background:#d9a5bb;color:#fff;border:none;border-radius:999px;cursor:pointer;font-family:'Patrick Hand',cursive;font-size:.85rem;white-space:nowrap;">
+          <i class="fas fa-plus"></i> Add
+        </button>
+      </div>
+      <div id="ingrEditError" class="hidden handwriting" style="color:#c0627e;font-size:.78rem;margin-top:6px;"></div>
+    </div>
 
     <div class="detail-section-label"><i class="fas fa-tags"></i> Tags</div>
     <div id="detailTags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:24px"></div>
@@ -809,6 +868,15 @@
   const detailNutritionSection = document.getElementById('detailNutritionSection');
   const detailNutritionGrid    = document.getElementById('detailNutritionGrid');
   const detailDeleteBtn    = document.getElementById('detailDeleteBtn');
+  const detailIngrList     = document.getElementById('detailIngrList');
+  const detailIngrEdit     = document.getElementById('detailIngrEdit');
+  const detailIngrEditRows = document.getElementById('detailIngrEditRows');
+  const detailEditIngrBtn  = document.getElementById('detailEditIngrBtn');
+  const ingrEditName       = document.getElementById('ingrEditName');
+  const ingrEditQty        = document.getElementById('ingrEditQty');
+  const ingrEditUnit       = document.getElementById('ingrEditUnit');
+  const ingrEditAddBtn     = document.getElementById('ingrEditAddBtn');
+  const ingrEditError      = document.getElementById('ingrEditError');
   const writeRecipeBtn     = document.getElementById('writeRecipeBtn');
   const writeRecipeModal   = document.getElementById('writeRecipeModal');
   const writeRecipeCloseBtn= document.getElementById('writeRecipeCloseBtn');
@@ -1011,7 +1079,7 @@
     document.querySelectorAll('.del-inv-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         if (!confirm('Remove this item from inventory?')) return;
-        apiRequest('/inventory-delete', { method: 'POST', body: JSON.stringify({ inventory_id: parseInt(btn.dataset.invId) }) })
+        apiRequest('/inventory', { method: 'POST', body: JSON.stringify({ action: 'delete', inventory_id: parseInt(btn.dataset.invId) }) })
           .then(function() { loadTabData('inventory'); })
           .catch(function() { showError('Could not remove item.'); });
       });
@@ -1024,7 +1092,8 @@
         var date  = prompt('Enter opened date (YYYY-MM-DD):', today);
         if (!date) return;
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Invalid date format. Use YYYY-MM-DD.'); return; }
-        apiRequest('/inventory-set-opened', { method: 'POST', body: JSON.stringify({
+        apiRequest('/inventory', { method: 'POST', body: JSON.stringify({
+          action:       'set-opened',
           inventory_id: parseInt(btn.dataset.invId),
           date_opened:  date
         })})
@@ -1036,7 +1105,8 @@
     // grocery mark as bought → remove from grocery, add to inventory
     document.querySelectorAll('.mark-bought-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        apiRequest('/grocery-bought', { method: 'POST', body: JSON.stringify({
+        apiRequest('/grocery', { method: 'POST', body: JSON.stringify({
+          action:        'bought',
           list_id:       parseInt(btn.dataset.listId),
           ingredient_id: parseInt(btn.dataset.ingredientId),
           quantity:      parseFloat(btn.dataset.qty),
@@ -1077,7 +1147,8 @@
     if (!unit) { invFormError.textContent = 'Enter a unit (e.g. grams, count).'; invFormError.classList.remove('hidden'); return; }
 
     invAddBtn.disabled = true;
-    apiRequest('/inventory-add', { method: 'POST', body: JSON.stringify({
+    apiRequest('/inventory', { method: 'POST', body: JSON.stringify({
+      action:          'add',
       user_id:         currentUser.user_id,
       ingredient_name: ingredient_name,
       quantity:        quantity,
@@ -1335,6 +1406,35 @@
     detailInstructions.textContent = recipe.instructions || 'No instructions recorded.';
     detailRecipeId.textContent     = 'recipe #' + recipe.recipe_id;
 
+    // flip card setup
+    var flipCard     = document.getElementById('detailFlipCard');
+    var flipLabel    = document.getElementById('detailFlipLabel');
+    var flipBack     = document.getElementById('detailIngrFlipBack');
+    flipCard.classList.remove('flipped');
+    flipBack.innerHTML = '<span class="handwriting" style="color:#cbb0bc;font-size:.85rem;padding:8px;">loading ingredients…</span>';
+
+    apiRequest('/ingredients?recipe_id=' + recipe.recipe_id).then(function(ingrs) {
+      if (!ingrs.length) {
+        flipBack.innerHTML = '<span class="handwriting" style="color:#cbb0bc;font-size:.85rem;padding:8px;">no ingredients on record</span>';
+        return;
+      }
+      flipBack.innerHTML = '<div style="padding:4px 0;">'
+        + ingrs.map(function(i) {
+            return '<div style="font-size:.85rem;color:#2e4a2e;padding:2px 0;">'
+              + '• <strong>' + i.ingredient_name + '</strong> — ' + i.quantity + ' ' + i.unit
+              + '</div>';
+          }).join('')
+        + '</div>';
+    });
+
+    flipCard.onclick = function() {
+      flipCard.classList.toggle('flipped');
+      var flipped = flipCard.classList.contains('flipped');
+      flipLabel.innerHTML = flipped
+        ? '<i class="fas fa-carrot"></i> Ingredients'
+        : '<i class="fas fa-scroll"></i> Instructions';
+    };
+
     // tags
     detailTags.innerHTML = '';
     if (tags.length) {
@@ -1380,15 +1480,81 @@
 
     detailDeleteBtn.onclick = function() {
       if (!confirm('Delete "' + recipe.recipe_name + '"? This cannot be undone.')) return;
-      apiRequest('/recipe-delete', { method: 'POST', body: JSON.stringify({ recipe_id: recipe.recipe_id, user_id: currentUser.user_id }) })
-        .then(function() {
-          closeRecipeDetail();
-          loadTabData('recipes');
-        })
+      apiRequest('/recipes', { method: 'POST', body: JSON.stringify({ action: 'delete', recipe_id: recipe.recipe_id, user_id: currentUser.user_id }) })
+        .then(function() { closeRecipeDetail(); loadTabData('recipes'); })
         .catch(function() { alert('Could not delete recipe.'); });
     };
 
     recipeDetailModal.classList.remove('hidden');
+
+    // reset ingredients panel
+    detailIngrList.innerHTML = '<span class="handwriting" style="color:#cbb0bc;font-size:.85rem;">loading…</span>';
+    detailIngrEdit.classList.add('hidden');
+    detailEditIngrBtn.innerHTML = '<i class="fas fa-pen"></i> edit';
+    ingrEditError.classList.add('hidden');
+
+    function renderIngrList(ingrs) {
+      if (!ingrs.length) {
+        detailIngrList.innerHTML = '<span class="handwriting" style="color:#cbb0bc;font-size:.85rem;">no ingredients on record</span>';
+        return;
+      }
+      detailIngrList.innerHTML = ingrs.map(function(i) {
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:.85rem;color:#4d2e44;">'
+          + '<span>' + i.quantity + ' ' + i.unit + ' <strong>' + i.ingredient_name + '</strong></span>'
+          + '<button class="del-ingr-btn handwriting" data-ri-id="' + i.ri_id + '" style="font-size:.72rem;background:#fce4ef;border:none;padding:2px 8px;border-radius:999px;cursor:pointer;color:#b05878;">✕</button>'
+          + '</div>';
+      }).join('');
+      detailIngrList.querySelectorAll('.del-ingr-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          apiRequest('/ingredients', { method: 'POST', body: JSON.stringify({
+            action:    'delete',
+            ri_id:     parseInt(btn.dataset.riId),
+            recipe_id: recipe.recipe_id,
+            user_id:   currentUser.user_id
+          })})
+          .then(function() {
+            btn.closest('div').remove();
+            if (!detailIngrList.querySelectorAll('.del-ingr-btn').length)
+              detailIngrList.innerHTML = '<span class="handwriting" style="color:#cbb0bc;font-size:.85rem;">no ingredients on record</span>';
+          })
+          .catch(function() { alert('Could not remove ingredient.'); });
+        });
+      });
+    }
+
+    apiRequest('/ingredients?recipe_id=' + recipe.recipe_id).then(renderIngrList)
+      .catch(function() { detailIngrList.innerHTML = '<span class="handwriting" style="color:#cbb0bc;font-size:.85rem;">—</span>'; });
+
+    detailEditIngrBtn.onclick = function() {
+      var open = detailIngrEdit.classList.toggle('hidden');
+      detailEditIngrBtn.innerHTML = open ? '<i class="fas fa-pen"></i> edit' : '<i class="fas fa-times"></i> close';
+    };
+
+    ingrEditAddBtn.onclick = function() {
+      ingrEditError.classList.add('hidden');
+      var name = sanitize(ingrEditName.value);
+      var qty  = parseFloat(ingrEditQty.value);
+      var unit = sanitize(ingrEditUnit.value);
+      if (!name) { ingrEditError.textContent = 'Enter an ingredient name.'; ingrEditError.classList.remove('hidden'); return; }
+      if (!qty || qty <= 0) { ingrEditError.textContent = 'Enter a valid quantity.'; ingrEditError.classList.remove('hidden'); return; }
+      if (!unit) { ingrEditError.textContent = 'Enter a unit.'; ingrEditError.classList.remove('hidden'); return; }
+
+      ingrEditAddBtn.disabled = true;
+      apiRequest('/ingredients', { method: 'POST', body: JSON.stringify({
+        action:          'add',
+        recipe_id:       recipe.recipe_id,
+        user_id:         currentUser.user_id,
+        ingredient_name: name,
+        quantity:        qty,
+        unit:            unit
+      })})
+      .then(function() {
+        ingrEditName.value = ''; ingrEditQty.value = ''; ingrEditUnit.value = '';
+        apiRequest('/ingredients?recipe_id=' + recipe.recipe_id).then(renderIngrList);
+      })
+      .catch(function() { ingrEditError.textContent = 'Could not add ingredient.'; ingrEditError.classList.remove('hidden'); })
+      .finally(function() { ingrEditAddBtn.disabled = false; });
+    };
 
     // reset ingredients panel
     detailIngrResult.classList.add('hidden');
@@ -1428,7 +1594,8 @@
               detailIngrResult.querySelectorAll('.add-to-grocery-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                   btn.disabled = true;
-                  apiRequest('/grocery-add', { method: 'POST', body: JSON.stringify({
+                  apiRequest('/grocery', { method: 'POST', body: JSON.stringify({
+                    action:        'add',
                     user_id:       currentUser.user_id,
                     ingredient_id: parseInt(btn.dataset.ingId),
                     quantity:      parseFloat(btn.dataset.qty),
@@ -1527,7 +1694,7 @@
     if (!username) { loginError.textContent = 'enter a username'; loginError.classList.remove('hidden'); return; }
     loginError.classList.add('hidden');
     try {
-      var resp = await apiRequest('/login', { method: 'POST', body: JSON.stringify({ username: username, password: passwordInput.value }) });
+      var resp = await apiRequest('/auth', { method: 'POST', body: JSON.stringify({ action: 'login', username: username, password: passwordInput.value }) });
       currentUser = resp.user;
       welcomeUserSpan.textContent = currentUser.name;
       loginPage.classList.add('hidden');
@@ -1581,7 +1748,7 @@
 
     registerBtn.disabled = true;
     try {
-      var resp = await apiRequest('/register', { method: 'POST', body: JSON.stringify({ username: username, password: password }) });
+      var resp = await apiRequest('/auth', { method: 'POST', body: JSON.stringify({ action: 'register', username: username, password: password }) });
       if (resp.success) {
         registerSuccess.textContent = '✨ Book created! You can now sign in.';
         registerSuccess.classList.remove('hidden');
@@ -1608,7 +1775,7 @@
   /* ── Clear purchased grocery items ───────────────────────── */
   document.getElementById('clearGroceryBtn').addEventListener('click', function() {
     if (!confirm('Remove all purchased items from your grocery list?')) return;
-    apiRequest('/grocery-clear', { method: 'POST', body: JSON.stringify({ user_id: currentUser.user_id }) })
+    apiRequest('/grocery', { method: 'POST', body: JSON.stringify({ action: 'clear', user_id: currentUser.user_id }) })
       .then(function() { loadTabData('grocery'); })
       .catch(function() { showError('Could not clear grocery list.'); });
   });
@@ -1636,7 +1803,8 @@
 
     wrSaveBtn.disabled = true;
     try {
-      var res = await apiRequest('/recipe-add', { method: 'POST', body: JSON.stringify({
+      var res = await apiRequest('/recipes', { method: 'POST', body: JSON.stringify({
+        action:       'add',
         user_id:      currentUser.user_id,
         recipe_name:  name,
         type:         type,
