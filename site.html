@@ -510,6 +510,11 @@
               class="handwriting"
               style="padding:8px 14px 8px 34px;background:rgba(255,255,255,.85);border:2px solid #eebfd2;border-radius:999px;outline:none;font-family:'Patrick Hand',cursive;font-size:.88rem;color:#6e3a52;width:160px;transition:border-color .2s,width .2s;">
           </div>
+          <button id="writeRecipeBtn"
+            class="handwriting"
+            style="background:#d4f5e9;color:#3a6e56;padding:8px 16px;border-radius:999px;border:1px solid #a8dbc5;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:.9rem;">
+            <i class="fas fa-pen"></i> Write recipe
+          </button>
           <button id="fetchRecipesBtn"
             class="handwriting"
             style="background:#d4e8f5;color:#476075;padding:8px 16px;border-radius:999px;border:1px solid #b7cfdf;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:.9rem;">
@@ -657,8 +662,66 @@
     </div>
 
     <div style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-      <button class="detail-fav-btn" id="detailFavBtn"><i class="fas fa-heart"></i> <span id="detailFavLabel">Add to Favorites</span></button>
-      <span id="detailRecipeId" style="font-size:.75rem;color:#cbb0bc"></span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="detail-fav-btn" id="detailFavBtn"><i class="fas fa-heart"></i> <span id="detailFavLabel">Add to Favorites</span></button>
+        <button class="detail-fav-btn" id="detailCheckIngrBtn" style="background:#d4e8f5;color:#476075;"><i class="fas fa-shopping-basket"></i> Check Ingredients</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="detailRecipeId" style="font-size:.75rem;color:#cbb0bc"></span>
+        <button class="detail-fav-btn" id="detailDeleteBtn" style="background:#fce4ef;color:#b05878;"><i class="fas fa-trash-alt"></i> Delete</button>
+      </div>
+    </div>
+    <div id="detailIngrResult" class="hidden" style="margin-top:16px;background:#f8fdf5;border-radius:14px;padding:14px;border:1px solid #d4edbd;">
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ WRITE RECIPE MODAL ═══════════════════ -->
+<div id="writeRecipeModal" class="modal-backdrop hidden">
+  <div class="detail-modal-box" style="max-width:560px;">
+    <button class="detail-close" id="writeRecipeCloseBtn"><i class="fas fa-times"></i></button>
+    <div style="font-family:'Fredoka One',cursive;font-size:1.5rem;color:#7a3d5e;margin-bottom:4px;">✏️ Write a Recipe</div>
+    <div class="handwriting" style="color:#b09aaa;font-size:.85rem;margin-bottom:18px;">your own creation</div>
+
+    <div id="writeRecipeError" class="hidden handwriting" style="color:#c0627e;font-size:.85rem;margin-bottom:10px;"></div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <div class="handwriting" style="font-size:.78rem;color:#b09aaa;margin-bottom:3px;">Recipe Name</div>
+        <input id="wrName" type="text" maxlength="255" placeholder="e.g. Grandma's Lasagna"
+          class="handwriting" style="width:100%;padding:8px 14px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;color:#6e3a52;outline:none;">
+      </div>
+      <div>
+        <div class="handwriting" style="font-size:.78rem;color:#b09aaa;margin-bottom:3px;">Type</div>
+        <select id="wrType" class="handwriting" style="width:100%;padding:8px 14px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;color:#6e3a52;outline:none;">
+          <option value="Breakfast">🍳 Breakfast</option>
+          <option value="Lunch">🥗 Lunch</option>
+          <option value="Dinner" selected>🍝 Dinner</option>
+          <option value="Dessert">🧁 Dessert</option>
+          <option value="Snack">🥨 Snack</option>
+          <option value="Drink">🍹 Drink</option>
+          <option value="Baking">🍞 Baking</option>
+          <option value="Other">📋 Other</option>
+        </select>
+      </div>
+      <div>
+        <div class="handwriting" style="font-size:.78rem;color:#b09aaa;margin-bottom:3px;">Serving Size</div>
+        <input id="wrServingSize" type="number" min="1" placeholder="4"
+          class="handwriting" style="width:100%;padding:8px 14px;border-radius:999px;border:2px solid #eebfd2;background:#fff;font-family:'Patrick Hand',cursive;font-size:.9rem;color:#6e3a52;outline:none;">
+      </div>
+      <div>
+        <div class="handwriting" style="font-size:.78rem;color:#b09aaa;margin-bottom:3px;">Instructions</div>
+        <textarea id="wrInstructions" rows="6" maxlength="5000" placeholder="Step 1. Preheat oven to 375°F&#10;Step 2. ..."
+          class="handwriting" style="width:100%;padding:10px 14px;border-radius:18px;border:2px solid #eebfd2;background:#fff3e7;font-family:'Patrick Hand',cursive;font-size:.9rem;color:#6e3a52;outline:none;resize:vertical;line-height:1.5;"></textarea>
+      </div>
+      <div>
+        <div class="handwriting" style="font-size:.78rem;color:#b09aaa;margin-bottom:3px;">Ingredients <span style="font-size:.72rem;">(one per line: "2 cups flour")</span></div>
+        <textarea id="wrIngredients" rows="5" placeholder="2 cups flour&#10;1 tsp salt&#10;3 eggs"
+          class="handwriting" style="width:100%;padding:10px 14px;border-radius:18px;border:2px solid #eebfd2;background:#fff8f2;font-family:'Patrick Hand',cursive;font-size:.9rem;color:#6e3a52;outline:none;resize:vertical;line-height:1.5;"></textarea>
+      </div>
+      <button id="wrSaveBtn" class="handwriting" style="background:#d9a5bb;color:#fff;border:none;padding:13px 0;border-radius:999px;font-size:1.1rem;cursor:pointer;font-family:'Patrick Hand',cursive;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;">
+        <i class="fas fa-save"></i> Save Recipe
+      </button>
     </div>
   </div>
 </div>
@@ -666,7 +729,7 @@
 <!-- ═══════════════════ NYAN CAT ═══════════════════ -->
 <div id="nyanCatOverlay" class="nyan-cat-overlay hidden">
   <div class="nyan-cat">
-    <img src="nyan.png" class="cat-body" alt="nyan cat" style="height:80px;width:auto;mix-blend-mode:multiply;">
+    <img src="nyan.png" class="cat-body" alt="nyan cat" style="height:80px;width:auto;">
   </div>
 </div>
 
@@ -738,9 +801,21 @@
   const detailTags         = document.getElementById('detailTags');
   const detailNutritionSection = document.getElementById('detailNutritionSection');
   const detailNutritionGrid    = document.getElementById('detailNutritionGrid');
-  const detailFavBtn       = document.getElementById('detailFavBtn');
+  const detailDeleteBtn    = document.getElementById('detailDeleteBtn');
+  const writeRecipeBtn     = document.getElementById('writeRecipeBtn');
+  const writeRecipeModal   = document.getElementById('writeRecipeModal');
+  const writeRecipeCloseBtn= document.getElementById('writeRecipeCloseBtn');
+  const writeRecipeError   = document.getElementById('writeRecipeError');
+  const wrName             = document.getElementById('wrName');
+  const wrType             = document.getElementById('wrType');
+  const wrServingSize      = document.getElementById('wrServingSize');
+  const wrInstructions     = document.getElementById('wrInstructions');
+  const wrIngredients      = document.getElementById('wrIngredients');
+  const wrSaveBtn          = document.getElementById('wrSaveBtn');
   const detailFavLabel     = document.getElementById('detailFavLabel');
   const detailRecipeId     = document.getElementById('detailRecipeId');
+  const detailCheckIngrBtn = document.getElementById('detailCheckIngrBtn');
+  const detailIngrResult   = document.getElementById('detailIngrResult');
   const recipeTypeModal    = document.getElementById('recipeTypeModal');
   const typeGrid          = document.getElementById('typeGrid');
   const modalConfirmBtn   = document.getElementById('modalConfirmBtn');
@@ -930,6 +1005,22 @@
         apiRequest('/inventory-delete', { method: 'POST', body: JSON.stringify({ inventory_id: parseInt(btn.dataset.invId) }) })
           .then(function() { loadTabData('inventory'); })
           .catch(function() { showError('Could not remove item.'); });
+      });
+    });
+
+    // set opened date
+    document.querySelectorAll('.set-opened-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var today = new Date().toISOString().split('T')[0];
+        var date  = prompt('Enter opened date (YYYY-MM-DD):', today);
+        if (!date) return;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Invalid date format. Use YYYY-MM-DD.'); return; }
+        apiRequest('/inventory-set-opened', { method: 'POST', body: JSON.stringify({
+          inventory_id: parseInt(btn.dataset.invId),
+          date_opened:  date
+        })})
+        .then(function() { loadTabData('inventory'); })
+        .catch(function() { showError('Could not set opened date.'); });
       });
     });
 
@@ -1123,14 +1214,19 @@
         case 'inventory':
           columns = ['Ingredient', 'Qty', 'Unit', 'Expiration', 'Opened', ''];
           data = await apiRequest('/inventory?user_id=' + userId);
-          mapper = function(i) { return [
-            i.ingredient_name,
-            i.quantity,
-            i.unit,
-            i.expiration_date || '—',
-            i.date_opened    || '—',
-            '<button class="del-inv-btn handwriting" data-inv-id="' + i.inventory_id + '" style="font-size:.75rem;background:#fce4ef;border:none;padding:4px 10px;border-radius:999px;cursor:pointer;color:#b05878;">🗑 remove</button>'
-          ]; };
+          mapper = function(i) {
+            var openedCell = i.date_opened
+              ? i.date_opened
+              : '<button class="set-opened-btn handwriting" data-inv-id="' + i.inventory_id + '" style="font-size:.75rem;background:#fff3cd;border:1px solid #ffd78a;padding:4px 10px;border-radius:999px;cursor:pointer;color:#856404;">📅 set opened</button>';
+            return [
+              i.ingredient_name,
+              i.quantity,
+              i.unit,
+              i.expiration_date || '—',
+              openedCell,
+              '<button class="del-inv-btn handwriting" data-inv-id="' + i.inventory_id + '" style="font-size:.75rem;background:#fce4ef;border:none;padding:4px 10px;border-radius:999px;cursor:pointer;color:#b05878;">🗑 remove</button>'
+            ];
+          };
           break;
         case 'grocery':
           columns = ['Ingredient', 'Qty', 'Unit', 'Purchased'];
@@ -1269,7 +1365,79 @@
         });
     };
 
+    detailDeleteBtn.onclick = function() {
+      if (!confirm('Delete "' + recipe.recipe_name + '"? This cannot be undone.')) return;
+      apiRequest('/recipe-delete', { method: 'POST', body: JSON.stringify({ recipe_id: recipe.recipe_id, user_id: currentUser.user_id }) })
+        .then(function() {
+          closeRecipeDetail();
+          loadTabData('recipes');
+        })
+        .catch(function() { alert('Could not delete recipe.'); });
+    };
+
     recipeDetailModal.classList.remove('hidden');
+
+    // reset ingredients panel
+    detailIngrResult.classList.add('hidden');
+    detailIngrResult.innerHTML = '';
+    detailCheckIngrBtn.onclick = function() {
+      detailCheckIngrBtn.disabled = true;
+      detailCheckIngrBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking…';
+      apiRequest('/check-ingredients?recipe_id=' + recipe.recipe_id + '&user_id=' + currentUser.user_id)
+        .then(function(res) {
+          detailIngrResult.classList.remove('hidden');
+          if (!res.missing.length && !res.have.length) {
+            detailIngrResult.innerHTML = '<div class="handwriting" style="color:#8aab80;font-size:.9rem;">✨ No ingredients on record for this recipe.</div>';
+            return;
+          }
+          var html = '';
+          if (res.has_all) {
+            html += '<div class="handwriting" style="color:#3a6e3a;font-size:.95rem;font-weight:700;margin-bottom:8px;">✅ You have everything!</div>';
+          } else {
+            html += '<div class="handwriting" style="color:#b05878;font-size:.95rem;font-weight:700;margin-bottom:8px;">🛒 Missing ' + res.missing.length + ' ingredient' + (res.missing.length !== 1 ? 's' : '') + '</div>';
+          }
+          if (res.have.length) {
+            html += '<div class="handwriting" style="font-size:.8rem;color:#5a8a5a;margin-bottom:6px;">In your pantry:</div>';
+            res.have.forEach(function(i) {
+              html += '<div style="font-size:.82rem;color:#3a5e3a;padding:2px 0;">✔ ' + i.ingredient_name + ' (' + i.have_qty + ' / ' + i.needed_qty + ' ' + i.unit + ')</div>';
+            });
+          }
+          if (res.missing.length) {
+            html += '<div class="handwriting" style="font-size:.8rem;color:#b05878;margin-top:8px;margin-bottom:6px;">Missing:</div>';
+            res.missing.forEach(function(i) {
+              html += '<div style="display:flex;align-items:center;justify-content:space-between;font-size:.82rem;color:#7a3a3a;padding:3px 0;">'
+                + '<span>✗ ' + i.ingredient_name + ' (need ' + i.needed_qty + ' ' + i.unit + ')</span>'
+                + '<button class="add-to-grocery-btn handwriting" data-ing-id="' + i.ingredient_id + '" data-qty="' + i.needed_qty + '" data-unit="' + i.unit + '" style="font-size:.75rem;background:#fcd5e4;border:none;padding:3px 10px;border-radius:999px;cursor:pointer;color:#795b69;margin-left:8px;">+ grocery</button>'
+                + '</div>';
+            });
+            // wire add to grocery buttons
+            setTimeout(function() {
+              detailIngrResult.querySelectorAll('.add-to-grocery-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                  btn.disabled = true;
+                  apiRequest('/grocery-add', { method: 'POST', body: JSON.stringify({
+                    user_id:       currentUser.user_id,
+                    ingredient_id: parseInt(btn.dataset.ingId),
+                    quantity:      parseFloat(btn.dataset.qty),
+                    unit:          btn.dataset.unit
+                  })})
+                  .then(function() { btn.textContent = '✔ added'; btn.style.background = '#d4e8f5'; })
+                  .catch(function() { btn.textContent = 'error'; btn.disabled = false; });
+                });
+              });
+            }, 50);
+          }
+          detailIngrResult.innerHTML = html;
+        })
+        .catch(function() {
+          detailIngrResult.classList.remove('hidden');
+          detailIngrResult.innerHTML = '<div class="handwriting" style="color:#b05878;">Could not check ingredients.</div>';
+        })
+        .finally(function() {
+          detailCheckIngrBtn.disabled = false;
+          detailCheckIngrBtn.innerHTML = '<i class="fas fa-shopping-basket"></i> Check Ingredients';
+        });
+    };
   }
 
   function closeRecipeDetail() { recipeDetailModal.classList.add('hidden'); }
@@ -1423,6 +1591,47 @@
 
   registerBtn.addEventListener('click', function(e) { e.preventDefault(); handleRegister(); });
   regPasswordConfirm.addEventListener('keypress', function(e) { if (e.key === 'Enter') handleRegister(); });
+
+  /* ── Write recipe modal ───────────────────────────────────── */
+  writeRecipeBtn.addEventListener('click', function() {
+    wrName.value = ''; wrInstructions.value = ''; wrIngredients.value = '';
+    wrServingSize.value = ''; wrType.value = 'Dinner';
+    writeRecipeError.classList.add('hidden');
+    writeRecipeModal.classList.remove('hidden');
+  });
+  writeRecipeCloseBtn.addEventListener('click', function() { writeRecipeModal.classList.add('hidden'); });
+  writeRecipeModal.addEventListener('click', function(e) { if (e.target === writeRecipeModal) writeRecipeModal.classList.add('hidden'); });
+
+  wrSaveBtn.addEventListener('click', async function() {
+    writeRecipeError.classList.add('hidden');
+    var name         = sanitize(wrName.value);
+    var type         = wrType.value;
+    var instructions = wrInstructions.value.trim().substring(0, 5000);
+    var serving_size = parseInt(wrServingSize.value) || null;
+    var ingredients  = wrIngredients.value.trim();
+
+    if (!name)         { writeRecipeError.textContent = 'Recipe name is required.'; writeRecipeError.classList.remove('hidden'); return; }
+    if (!instructions) { writeRecipeError.textContent = 'Instructions are required.'; writeRecipeError.classList.remove('hidden'); return; }
+
+    wrSaveBtn.disabled = true;
+    try {
+      var res = await apiRequest('/recipe-add', { method: 'POST', body: JSON.stringify({
+        user_id:      currentUser.user_id,
+        recipe_name:  name,
+        type:         type,
+        instructions: instructions,
+        serving_size: serving_size,
+        ingredients:  ingredients
+      })});
+      writeRecipeModal.classList.add('hidden');
+      loadTabData('recipes');
+    } catch(e) {
+      writeRecipeError.textContent = e.message || 'Could not save recipe.';
+      writeRecipeError.classList.remove('hidden');
+    } finally {
+      wrSaveBtn.disabled = false;
+    }
+  });
 
   /* ── Boot ─────────────────────────────────────────────── */
   showLoginPage();

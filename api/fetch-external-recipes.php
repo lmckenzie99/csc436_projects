@@ -15,39 +15,86 @@ $SPOONACULAR_KEY = '47b54a602d8f472c91769bbb6942eff1';
 $EDAMAM_APP_ID   = 'fd3230a5';
 $EDAMAM_APP_KEY  = 'e3d784dd42a820d3e6086779f1019667';
 
-$added   = 0;
-$errors  = [];
+$added  = 0;
+$errors = [];
 
 // ── Spoonacular ───────────────────────────────────────────────────────────────
 if ($source === 'spoonacular' || $source === 'both') {
     $query = urlencode($type);
-    $url   = "https://api.spoonacular.com/recipes/complexSearch"
-           . "?query={$query}&number=5&addRecipeInformation=true&apiKey={$SPOONACULAR_KEY}";
-
-    $raw = @file_get_contents($url);
+    // Step 1: search
+    $search_url = "https://api.spoonacular.com/recipes/complexSearch"
+                . "?query={$query}&number=5&apiKey={$SPOONACULAR_KEY}";
+    $raw = @file_get_contents($search_url);
     if ($raw === false) {
-        $errors[] = 'Spoonacular request failed';
+        $errors[] = 'Spoonacular search failed';
     } else {
-        $data = json_decode($raw, true);
-        foreach (($data['results'] ?? []) as $r) {
-            $name         = sanitize_str($r['title']                    ?? 'Untitled', 255);
-            $instructions = sanitize_str(strip_tags($r['summary']       ?? ''), 2000);
-            $image_url    = sanitize_str($r['image']                    ?? '', 500);
-            $source_api   = 'Spoonacular';
+        $search = json_decode($raw, true);
+        $ids    = array_column($search['results'] ?? [], 'id');
 
-            // skip if this user already has a recipe with the same name
-            $exists = pdo($pdo, '
-                SELECT recipe_id FROM Recipes
-                WHERE LOWER(recipe_name) = LOWER(?) AND user_id = ? LIMIT 1
-            ', [$name, $user_id])->fetch();
+        if (!empty($ids)) {
+            // Step 2: bulk detail fetch (instructions + ingredients in one call)
+            $ids_str    = implode(',', $ids);
+            $detail_url = "https://api.spoonacular.com/recipes/informationBulk"
+                        . "?ids={$ids_str}&includeNutrition=false&apiKey={$SPOONACULAR_KEY}";
+            $raw2 = @file_get_contents($detail_url);
+            if ($raw2 === false) {
+                $errors[] = 'Spoonacular detail fetch failed';
+            } else {
+                $recipes = json_decode($raw2, true);
+                foreach ($recipes as $r) {
+                    $name         = sanitize_str($r['title'] ?? 'Untitled', 255);
+                    // Use analyzedInstructions for clean step-by-step text
+                    $steps = [];
+                    foreach (($r['analyzedInstructions'][0]['steps'] ?? []) as $step) {
+                        $steps[] = $step['number'] . '. ' . $step['step'];
+                    }
+                    $instructions = !empty($steps)
+                        ? sanitize_str(implode("\n", $steps), 5000)
+                        : sanitize_str(strip_tags($r['instructions'] ?? 'No instructions available.'), 5000);
+                    $image_url  = sanitize_str($r['image'] ?? '', 500);
+                    $source_api = 'Spoonacular';
 
-            if (!$exists) {
-                pdo($pdo, '
-                    INSERT INTO Recipes
-                        (user_id, recipe_name, instructions, image_url, source_api, cache_priority, last_fetched)
-                    VALUES (?, ?, ?, ?, ?, ?, NOW())
-                ', [$user_id, $name, $instructions, $image_url, $source_api, $type]);
-                $added++;
+                    $exists = pdo($pdo, '
+                        SELECT recipe_id FROM Recipes
+                        WHERE LOWER(recipe_name) = LOWER(?) AND user_id = ? LIMIT 1
+                    ', [$name, $user_id])->fetch();
+
+                    if (!$exists) {
+                        pdo($pdo, '
+                            INSERT INTO Recipes
+                                (user_id, recipe_name, instructions, image_url, source_api, cache_priority, last_fetched)
+                            VALUES (?, ?, ?, ?, ?, ?, NOW())
+                        ', [$user_id, $name, $instructions, $image_url, $source_api, $type]);
+                        $recipe_id = (int)$pdo->lastInsertId();
+
+                        // Store ingredients in Recipe_Ingredients
+                        foreach (($r['extendedIngredients'] ?? []) as $ing) {
+                            $ing_name = sanitize_str($ing['name'] ?? '', 100);
+                            $qty      = (float)($ing['amount'] ?? 0);
+                            $unit     = sanitize_str($ing['unit'] ?? 'count', 50);
+                            if (!$ing_name) continue;
+
+                            // Find or create ingredient
+                            $existing_ing = pdo($pdo, '
+                                SELECT ingredient_id FROM Ingredients
+                                WHERE LOWER(ingredient_name) = LOWER(?) LIMIT 1
+                            ', [$ing_name])->fetch();
+
+                            if ($existing_ing) {
+                                $ing_id = (int)$existing_ing['ingredient_id'];
+                            } else {
+                                pdo($pdo, 'INSERT INTO Ingredients (ingredient_name, default_unit) VALUES (?, ?)', [$ing_name, $unit]);
+                                $ing_id = (int)$pdo->lastInsertId();
+                            }
+
+                            pdo($pdo, '
+                                INSERT IGNORE INTO Recipe_Ingredients (recipe_id, ingredient_id, quantity, unit)
+                                VALUES (?, ?, ?, ?)
+                            ', [$recipe_id, $ing_id, $qty, $unit]);
+                        }
+                        $added++;
+                    }
+                }
             }
         }
     }
@@ -66,11 +113,11 @@ if (($source === 'edamam' || $source === 'both') && $EDAMAM_APP_ID && $EDAMAM_AP
     } else {
         $data = json_decode($raw, true);
         foreach (($data['hits'] ?? []) as $hit) {
-            $r            = $hit['recipe'] ?? [];
-            $name         = sanitize_str($r['label']              ?? 'Untitled', 255);
-            $instructions = sanitize_str($r['url']                ?? '', 500); // Edamam links to source
-            $image_url    = sanitize_str($r['image']              ?? '', 500);
-            $source_api   = 'Edamam';
+            $r          = $hit['recipe'] ?? [];
+            $name       = sanitize_str($r['label'] ?? 'Untitled', 255);
+            $instructions = sanitize_str('See full recipe at: ' . ($r['url'] ?? ''), 500);
+            $image_url  = sanitize_str($r['image'] ?? '', 500);
+            $source_api = 'Edamam';
 
             $exists = pdo($pdo, '
                 SELECT recipe_id FROM Recipes
@@ -83,6 +130,31 @@ if (($source === 'edamam' || $source === 'both') && $EDAMAM_APP_ID && $EDAMAM_AP
                         (user_id, recipe_name, instructions, image_url, source_api, cache_priority, last_fetched)
                     VALUES (?, ?, ?, ?, ?, ?, NOW())
                 ', [$user_id, $name, $instructions, $image_url, $source_api, $type]);
+                $recipe_id = (int)$pdo->lastInsertId();
+
+                foreach (($r['ingredients'] ?? []) as $ing) {
+                    $ing_name = sanitize_str($ing['food'] ?? '', 100);
+                    $qty      = (float)($ing['quantity'] ?? 0);
+                    $unit     = sanitize_str($ing['measure'] ?? 'count', 50);
+                    if (!$ing_name) continue;
+
+                    $existing_ing = pdo($pdo, '
+                        SELECT ingredient_id FROM Ingredients
+                        WHERE LOWER(ingredient_name) = LOWER(?) LIMIT 1
+                    ', [$ing_name])->fetch();
+
+                    if ($existing_ing) {
+                        $ing_id = (int)$existing_ing['ingredient_id'];
+                    } else {
+                        pdo($pdo, 'INSERT INTO Ingredients (ingredient_name, default_unit) VALUES (?, ?)', [$ing_name, $unit]);
+                        $ing_id = (int)$pdo->lastInsertId();
+                    }
+
+                    pdo($pdo, '
+                        INSERT IGNORE INTO Recipe_Ingredients (recipe_id, ingredient_id, quantity, unit)
+                        VALUES (?, ?, ?, ?)
+                    ', [$recipe_id, $ing_id, $qty, $unit]);
+                }
                 $added++;
             }
         }
