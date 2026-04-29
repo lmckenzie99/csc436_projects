@@ -547,11 +547,18 @@
           <div id="errorMessage" class="hidden text-center py-6 handwriting" style="color:#c0627e"></div>
 
           <!-- standard table -->
-          <div class="overflow-x-auto pb-2" id="tableWrap">
+          <div id="tableWrap">
+            <div id="clearGroceryWrap" style="display:none;margin-bottom:10px;text-align:right;">
+              <button id="clearGroceryBtn" class="handwriting" style="display:none;background:#fce4ef;color:#b05878;border:1px solid #e3b6c9;padding:7px 16px;border-radius:999px;font-family:'Patrick Hand',cursive;font-size:.88rem;cursor:pointer;align-items:center;gap:6px;">
+                <i class="fas fa-shopping-cart"></i> Clear purchased items
+              </button>
+            </div>
+            <div class="overflow-x-auto pb-2">
             <table class="recipe-table" id="dataTable" style="min-width:100%">
               <thead><tr id="tableHeaderRow"></tr></thead>
               <tbody id="tableBody"></tbody>
             </table>
+            </div>
           </div>
 
           <!-- inventory add form -->
@@ -843,6 +850,8 @@
     tableWrap.classList.toggle('hidden', s || currentTab === 'nutrition');
     nutritionPanel.classList.toggle('hidden', s || currentTab !== 'nutrition');
     inventoryForm.classList.toggle('hidden', currentTab !== 'inventory');
+    var cgw = document.getElementById('clearGroceryWrap');
+    if (cgw) cgw.style.display = currentTab === 'grocery' ? 'block' : 'none';
   }
   function showError(m) { errorMessageDiv.textContent = m; errorMessageDiv.classList.remove('hidden'); }
   function hideError()  { errorMessageDiv.classList.add('hidden'); }
@@ -1231,6 +1240,10 @@
         case 'grocery':
           columns = ['Ingredient', 'Qty', 'Unit', 'Purchased'];
           data = await apiRequest('/grocery?user_id=' + userId);
+          var hasPurchased = data.some(function(g) { return g.is_purchased; });
+          // show/hide clear button
+          var clearGroceryBtn = document.getElementById('clearGroceryBtn');
+          if (clearGroceryBtn) clearGroceryBtn.style.display = hasPurchased ? 'inline-flex' : 'none';
           mapper = function(g) { return [
             g.ingredient_name,
             g.quantity,
@@ -1591,6 +1604,14 @@
 
   registerBtn.addEventListener('click', function(e) { e.preventDefault(); handleRegister(); });
   regPasswordConfirm.addEventListener('keypress', function(e) { if (e.key === 'Enter') handleRegister(); });
+
+  /* ── Clear purchased grocery items ───────────────────────── */
+  document.getElementById('clearGroceryBtn').addEventListener('click', function() {
+    if (!confirm('Remove all purchased items from your grocery list?')) return;
+    apiRequest('/grocery-clear', { method: 'POST', body: JSON.stringify({ user_id: currentUser.user_id }) })
+      .then(function() { loadTabData('grocery'); })
+      .catch(function() { showError('Could not clear grocery list.'); });
+  });
 
   /* ── Write recipe modal ───────────────────────────────────── */
   writeRecipeBtn.addEventListener('click', function() {
