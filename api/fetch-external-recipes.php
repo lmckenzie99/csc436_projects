@@ -52,27 +52,36 @@ if ($raw === false) {
                 ', [$name, $user_id])->fetch();
 
                 if (!$exists) {
-                    pdo($pdo, '
-                        INSERT INTO Recipes
-                            (user_id, recipe_name, instructions, image_url, source_api, cache_priority, last_fetched)
-                        VALUES (?, ?, ?, ?, ?, ?, NOW())
-                    ', [$user_id, $name, $instructions, $image_url, 'Spoonacular', $type]);
-                    $recipe_id = (int)$pdo->lastInsertId();
+                    try {
+                        $pdo->beginTransaction();
 
-                    foreach (($r['extendedIngredients'] ?? []) as $ing) {
-                        $ing_name = sanitize_str($ing['name'] ?? '', 100);
-                        $qty      = (float)($ing['amount'] ?? 0);
-                        $unit     = sanitize_str($ing['unit'] ?? 'count', 50);
-                        if (!$ing_name) continue;
+                        pdo($pdo, '
+                            INSERT INTO Recipes
+                                (user_id, recipe_name, instructions, image_url, source_api, cache_priority, last_fetched)
+                            VALUES (?, ?, ?, ?, ?, ?, NOW())
+                        ', [$user_id, $name, $instructions, $image_url, 'Spoonacular', $type]);
+                        $recipe_id = (int)$pdo->lastInsertId();
 
-                        $ex = pdo($pdo, 'SELECT ingredient_id FROM Ingredients WHERE LOWER(ingredient_name) = LOWER(?) LIMIT 1', [$ing_name])->fetch();
-                        if ($ex) { $ing_id = (int)$ex['ingredient_id']; }
-                        else { pdo($pdo, 'INSERT INTO Ingredients (ingredient_name, default_unit) VALUES (?, ?)', [$ing_name, $unit]); $ing_id = (int)$pdo->lastInsertId(); }
+                        foreach (($r['extendedIngredients'] ?? []) as $ing) {
+                            $ing_name = sanitize_str($ing['name'] ?? '', 100);
+                            $qty      = (float)($ing['amount'] ?? 0);
+                            $unit     = sanitize_str($ing['unit'] ?? 'count', 50);
+                            if (!$ing_name) continue;
 
-                        pdo($pdo, 'INSERT IGNORE INTO Recipe_Ingredients (recipe_id, ingredient_id, quantity, unit) VALUES (?, ?, ?, ?)',
-                            [$recipe_id, $ing_id, $qty, $unit]);
+                            $ex = pdo($pdo, 'SELECT ingredient_id FROM Ingredients WHERE LOWER(ingredient_name) = LOWER(?) LIMIT 1', [$ing_name])->fetch();
+                            if ($ex) { $ing_id = (int)$ex['ingredient_id']; }
+                            else { pdo($pdo, 'INSERT INTO Ingredients (ingredient_name, default_unit) VALUES (?, ?)', [$ing_name, $unit]); $ing_id = (int)$pdo->lastInsertId(); }
+
+                            pdo($pdo, 'INSERT IGNORE INTO Recipe_Ingredients (recipe_id, ingredient_id, quantity, unit) VALUES (?, ?, ?, ?)',
+                                [$recipe_id, $ing_id, $qty, $unit]);
+                        }
+
+                        $pdo->commit();
+                        $added++;
+                    } catch (Exception $e) {
+                        $pdo->rollBack();
+                        $errors[] = 'Transaction failed for recipe: ' . $name;
                     }
-                    $added++;
                 }
             }
         }
